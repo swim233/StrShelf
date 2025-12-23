@@ -128,6 +128,36 @@ func main() {
 		})
 
 	})
+	r.POST("/v1/user.login", func(ctx *gin.Context) {
+		user := UserInfo{}
+		err := ctx.BindJSON(&user)
+		if err != nil {
+			ctx.JSON(500, "internal error")
+			return
+		}
+
+		matchUsers, err := gorm.G[UserInfo](db).Raw("SELECT * FROM public.shelf_user_v1 WHERE username = ?", user.Username).Find(context.Background())
+		if err != nil {
+			ctx.JSON(500, "error in insert database: "+err.Error())
+			fmt.Println(err.Error())
+			return
+		}
+		if len(matchUsers) == 1 {
+			matchUser := matchUsers[0]
+			err := bcrypt.CompareHashAndPassword([]byte(matchUser.Password), []byte(user.Password))
+			if err != nil {
+				ctx.JSON(401, "password is incorrect")
+
+				return
+			} else {
+				ctx.JSON(200, "login success")
+			}
+		} else {
+			ctx.JSON(401, "user is not exist")
+			return
+		}
+
+	})
 
 	r.Run(":1111")
 
@@ -135,5 +165,4 @@ func main() {
 
 func HashPassword(password string) ([]byte, error) {
 	return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-
 }
