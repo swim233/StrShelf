@@ -1,0 +1,5 @@
+{
+  "cSpell.words": ["dbname", "gonic", "gorm", "sslmode", "strshelf"],
+  "stm32-for-vscode.openOCDPath": false,
+  "stm32-for-vscode.armToolchainPath": false
+}
