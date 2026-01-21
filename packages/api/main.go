@@ -9,6 +9,8 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.ilharper.com/strshelf/api/config"
+	"gopkg.ilharper.com/strshelf/api/logger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -57,6 +59,9 @@ func (ct *CustomTime) UnmarshalJSON(data []byte) error {
 }
 
 func main() {
+	logger.InitLogger()
+	config.InitConfig()
+	logger.Suger.Infoln("test")
 	dsn := "host=localhost user=postgres dbname=strshelf port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
