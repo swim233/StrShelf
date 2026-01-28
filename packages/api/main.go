@@ -154,7 +154,7 @@ func main() {
 			err := bcrypt.CompareHashAndPassword([]byte(matchUser.Password), []byte(user.Password))
 			if err != nil {
 				ctx.JSON(401, "password is incorrect")
-
+				logger.Suger.Warnf("a failure logging request: %s", err.Error())
 				return
 			} else {
 				token := token.CreateJWT(user.Username)

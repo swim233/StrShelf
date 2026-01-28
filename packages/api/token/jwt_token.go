@@ -13,7 +13,7 @@ func CreateJWT(username string) string {
 	claims := &jwt.RegisteredClaims{
 		Issuer: username,
 		ExpiresAt: &jwt.NumericDate{
-			Time: time.Now().Add(time.Hour * 8),
+			Time: time.Now().Add(time.Hour * 720),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
