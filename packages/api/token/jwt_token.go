@@ -9,15 +9,15 @@ import (
 	"gopkg.ilharper.com/strshelf/api/logger"
 )
 
-func CreateNewJWT() string {
+func CreateJWT(username string) string {
 	claims := &jwt.RegisteredClaims{
-		Issuer: "swim",
+		Issuer: username,
 		ExpiresAt: &jwt.NumericDate{
 			Time: time.Now().Add(time.Hour * 8),
 		},
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
-	ss, err := token.SignedString("testSign")
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	ss, err := token.SignedString([]byte(viper.GetString("secret_key")))
 	if err != nil {
 		logger.Suger.Errorf("error when creating jwt token: %s", err.Error())
 		return ""
