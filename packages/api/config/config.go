@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/spf13/viper"
+	"gopkg.ilharper.com/strshelf/api/logger"
 )
 
 type Config struct {
@@ -16,12 +17,14 @@ func InitConfig() {
 	v := ViperInstance
 	v.AddConfigPath("./")
 	v.AddConfigPath(".")
+	v.AddConfigPath("packages/api/config/")
 	v.SetConfigName("config.json")
-
+	v.SetConfigType("json")
 	err := v.ReadInConfig()
 	if err != nil {
-		println(err.Error())
+		logger.Suger.Errorf("can not load config: %s", err.Error())
 	} else {
+		logger.Suger.Infof("config load successful")
 		ConfigInstance.Port = v.GetInt("port")
 	}
 }
