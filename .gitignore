@@ -242,3 +242,6 @@ go.work.sum
 
 # Yarn
 .yarn
+
+# Json config
+config.json
