@@ -11,6 +11,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.ilharper.com/strshelf/api/config"
 	"gopkg.ilharper.com/strshelf/api/logger"
+	"gopkg.ilharper.com/strshelf/api/token"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -156,7 +157,8 @@ func main() {
 
 				return
 			} else {
-				ctx.JSON(200, "login success")
+				token := token.CreateJWT(user.Username)
+				ctx.JSON(200, token)
 			}
 		} else {
 			ctx.JSON(401, "user is not exist")
