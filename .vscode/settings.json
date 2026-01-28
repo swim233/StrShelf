@@ -3,7 +3,9 @@
     "Datas",
     "dbname",
     "gonic",
+    "gopkg",
     "gorm",
+    "ilharper",
     "signup",
     "sslmode",
     "strshelf"

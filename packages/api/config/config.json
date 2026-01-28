@@ -1,3 +1,4 @@
 {
-  "port": "1111"
+  "port": "1111",
+  "secret_key": "aKey"
 }

@@ -41,6 +41,7 @@ type UserInfo struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
+
 type CustomTime time.Time
 
 func (ct CustomTime) MarshalJSON() ([]byte, error) {
