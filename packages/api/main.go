@@ -77,7 +77,7 @@ func main() {
 	r.POST("/v1/item.get", func(ctx *gin.Context) {
 		shelfItems, err := gorm.G[ShelfItem](db).Raw("SELECT * FROM public.shelf_item_v1 WHERE deleted IS NOT TRUE ORDER BY id DESC").Find(context.Background())
 		if err != nil {
-			ctx.JSON(500, "error in getting items")
+			ctx.JSON(500, gin.H{"message": "internal error"})
 			return
 		}
 
@@ -92,16 +92,16 @@ func main() {
 		result := gorm.WithResult()
 		err := ctx.ShouldBindJSON(&newShelfItem)
 		if err != nil {
-			ctx.JSON(500, "error in binding json: "+err.Error())
-			fmt.Println(err.Error())
+			ctx.JSON(500, gin.H{"message": "error in binding json: " + err.Error()})
+			logger.Suger.Errorf("error in getting items: %s", err.Error())
 			return
 		}
 
 		err = gorm.G[any](db).Exec(context.Background(), "INSERT INTO public.shelf_item_v1 (title,link,comment,deleted) VALUES(?,?,?,?)", newShelfItem.Title, newShelfItem.Link, newShelfItem.Comment, false)
 
 		if err != nil {
-			ctx.JSON(500, "error in insert database: "+err.Error())
-			fmt.Println(err.Error())
+			ctx.JSON(500, gin.H{"message": "internal error"})
+			logger.Suger.Errorf("error in insert database: %s", err.Error())
 			return
 		}
 		ctx.JSON(200, PostRequestResponse{
@@ -114,19 +114,19 @@ func main() {
 		result := gorm.WithResult()
 		err := ctx.BindJSON(&newUser)
 		if err != nil {
-			ctx.JSON(500, "internal error")
+			ctx.JSON(500, gin.H{"message": "internal error"})
 			return
 		}
 		HashedPassword, err := HashPassword(newUser.Password)
 		if err != nil {
-			ctx.JSON(500, "internal error")
+			ctx.JSON(500, gin.H{"message": "internal error"})
 			return
 		}
 
 		err = gorm.G[any](db).Exec(context.Background(), "INSERT INTO public.shelf_user_v1 (username,password) VALUES(?,?)", newUser.Username, HashedPassword)
 		if err != nil {
-			ctx.JSON(500, "error in insert database: "+err.Error())
-			fmt.Println(err.Error())
+			ctx.JSON(500, gin.H{"message": "internal error"})
+			logger.Suger.Errorf("error in insert database: %s", err.Error())
 			return
 		}
 		ctx.JSON(200, PostRequestResponse{
@@ -139,13 +139,13 @@ func main() {
 		user := UserInfo{}
 		err := ctx.BindJSON(&user)
 		if err != nil {
-			ctx.JSON(500, "internal error")
+			ctx.JSON(500, gin.H{"message": "internal error"})
 			return
 		}
 
 		matchUsers, err := gorm.G[UserInfo](db).Raw("SELECT * FROM public.shelf_user_v1 WHERE username = ?", user.Username).Find(context.Background())
 		if err != nil {
-			ctx.JSON(500, "error in insert database: "+err.Error())
+			ctx.JSON(500, gin.H{"message": "error in insert database: " + err.Error()})
 			fmt.Println(err.Error())
 			return
 		}
@@ -153,7 +153,7 @@ func main() {
 			matchUser := matchUsers[0]
 			err := bcrypt.CompareHashAndPassword([]byte(matchUser.Password), []byte(user.Password))
 			if err != nil {
-				ctx.JSON(401, "password is incorrect")
+				ctx.JSON(401, gin.H{"message": "password is incorrect"})
 				logger.Suger.Warnf("a failure logging request: %s", err.Error())
 				return
 			} else {
@@ -161,7 +161,7 @@ func main() {
 				ctx.JSON(200, gin.H{"token": token})
 			}
 		} else {
-			ctx.JSON(401, "user is not exist")
+			ctx.JSON(401, gin.H{"message": "user is not exist"})
 			return
 		}
 
@@ -171,7 +171,7 @@ func main() {
 		ctx.Bind(&tokenReq)
 		if err != nil {
 			logger.Suger.Errorf("error in verifying user token: %s", err.Error())
-			ctx.JSON(500, "internal error")
+			ctx.JSON(500, gin.H{"message": "internal error"})
 			return
 		}
 		if result, err := token.VerifyJWT(string(tokenReq.Token)); err != nil {
@@ -184,10 +184,10 @@ func main() {
 
 			switch result {
 			case true:
-				ctx.JSON(200, "token is valid")
+				ctx.JSON(200, gin.H{"message": "successful"})
 			case false:
 				logger.Suger.Warnf("user post a error token: %s", tokenReq.Token)
-				ctx.JSON(401, "token is invalid")
+				ctx.JSON(401, gin.H{"message": "token is invalid"})
 			}
 			return
 		}
