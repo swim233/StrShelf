@@ -158,13 +158,39 @@ func main() {
 				return
 			} else {
 				token := token.CreateJWT(user.Username)
-				ctx.JSON(200, token)
+				ctx.JSON(200, gin.H{"token": token})
 			}
 		} else {
 			ctx.JSON(401, "user is not exist")
 			return
 		}
 
+	})
+	r.POST("/v1/user.verify", func(ctx *gin.Context) {
+		var tokenReq token.TokenRequest
+		ctx.Bind(&tokenReq)
+		if err != nil {
+			logger.Suger.Errorf("error in verifying user token: %s", err.Error())
+			ctx.JSON(500, "internal error")
+			return
+		}
+		if result, err := token.VerifyJWT(string(tokenReq.Token)); err != nil {
+			logger.Suger.Warnf("error in verifying user token: %s", err.Error())
+			logger.Suger.Warnf("received token: %s", tokenReq.Token)
+			ctx.JSON(401, gin.H{
+				"message": "token is invalid"})
+			return
+		} else {
+
+			switch result {
+			case true:
+				ctx.JSON(200, "token is valid")
+			case false:
+				logger.Suger.Warnf("user post a error token: %s", tokenReq.Token)
+				ctx.JSON(401, "token is invalid")
+			}
+			return
+		}
 	})
 
 	r.Run(":1111")

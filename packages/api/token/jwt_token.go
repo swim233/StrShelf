@@ -9,6 +9,10 @@ import (
 	"gopkg.ilharper.com/strshelf/api/logger"
 )
 
+type TokenRequest struct {
+	Token string `json:"token"`
+}
+
 func CreateJWT(username string) string {
 	claims := &jwt.RegisteredClaims{
 		Issuer: username,
