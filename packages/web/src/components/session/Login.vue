@@ -1,9 +1,7 @@
 <script lang="ts">
-
+import Cookies from 'js-cookie'
 </script>
 
-<template>
-  
-</template>
+<template></template>
 
 <style lang="css"></style>

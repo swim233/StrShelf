@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, TransitionGroup } from 'vue'
 import './components/views/Icons.vue'
 import Icons from './components/views/Icons.vue'
+import Cookies from 'js-cookie'
 
 interface StrShelfResponse<T> {
   code: number
@@ -37,16 +38,26 @@ interface Notice {
   subMessage?: string
 }
 
+interface Token {
+  token: string
+}
+
+interface UserInfo {
+  username: string
+  password: string
+}
+
 let noticeId = 0
 
 const saveDatas = ref<ShelfItem[]>([])
 onMounted(() => {
   notify({
     type: 'Info',
-    delayTime: 300000,
+    delayTime: 3000,
     mainMessage: '正在获取列表',
   })
   fetchData()
+  loginDisplayText.value = computeDisplayText()
 })
 
 const fetchData = async () => {
@@ -128,7 +139,7 @@ const postNewData = async () => {
     gmt_deleted: 0,
     deleted: false,
   }
-  isActive.value = false
+  postIsActive.value = false
   dialogDisplayDelay.value = false
 
   try {
@@ -136,6 +147,7 @@ const postNewData = async () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + Cookies.get('token'),
       },
       body: JSON.stringify(postData),
     })
@@ -149,6 +161,14 @@ const postNewData = async () => {
         subMessage: '项目创建成功',
       })
       fetchData()
+    } else if (r.code == 401) {
+      notify({
+        type: 'Error',
+        delayTime: 3000,
+        mainMessage: '身份验证失败',
+        subMessage: '请重新登陆',
+      })
+      loginStatus.value = false
     } else {
       notify({
         type: 'Error',
@@ -185,11 +205,12 @@ const reset = () => {
   saveDatas.value = []
 }
 
-const isActive = ref<boolean>(false)
+const postIsActive = ref<boolean>(false)
+const loginIsActive = ref<boolean>(false)
 let timeout: ReturnType<typeof setTimeout> | null = null
 
 const post = () => {
-  isActive.value = true
+  postIsActive.value = true
 
   if (timeout) {
     clearTimeout(timeout)
@@ -199,9 +220,41 @@ const post = () => {
     dialogDisplayDelay.value = true
   }, 300)
 }
+const loginOverlay = ref<boolean>(false)
+const loginButton = () => {
+  loginOverlay.value = true
+  loginIsActive.value = true
+}
+const userInfo = ref<UserInfo>({
+  username: '',
+  password: '',
+})
 
+const loginSubmit = async () => {
+  let result = await login(userInfo.value.username, userInfo.value.password)
+  if (result) {
+    notify({
+      type: 'Success',
+      delayTime: 3000,
+      mainMessage: '登陆成功',
+    })
+    loginDisplayText.value = userInfo.value.username
+  } else {
+    notify({
+      type: 'Error',
+      delayTime: 3000,
+      mainMessage: '登陆失败',
+      subMessage: '请检查用户名和密码',
+    })
+  }
+  loginIsActive.value = false
+  userInfo.value.password = ''
+  userInfo.value.username = ''
+  //TODO:更优雅的置空方式
+}
 const cancelDialog = () => {
-  isActive.value = false
+  postIsActive.value = false
+  loginIsActive.value = false
   dialogDisplayDelay.value = false
 
   if (timeout) {
@@ -210,18 +263,117 @@ const cancelDialog = () => {
   }
 }
 const activeCss = computed<string>(() => {
-  return isActive.value ? 'post-dialog-active' : 'post-dialog-positive'
+  return postIsActive.value ? 'post-dialog-active' : 'post-dialog-positive'
+})
+const loginActiveCss = computed<string>(() => {
+  return loginIsActive.value ? 'login-dialog-active' : 'login-dialog-positive'
 })
 
 const dialogDisplayDelay = ref<boolean>(false)
+
+const login = async (account: string, password: string): Promise<boolean> => {
+  let token = Cookies.get('token')
+  console.log('token from cookies: ' + token)
+  let isTokenValid = await verifyJWT(token)
+  if (isTokenValid) {
+    return true
+  }
+  let response = await fetch('http://localhost:1111/v1/user.login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ account, password }),
+  })
+
+  if (response.ok) {
+    let data = (await response.json()) as Token
+    if (await verifyJWT(data.token)) {
+      console.log('verify success before set token')
+      Cookies.set('token', data.token)
+      Cookies.set('username', account)
+      return true
+    } else {
+      console.log('fail to verifyJWT!: ' + data.token)
+      console.log(response.status)
+      return false
+    }
+  }
+  return false
+}
+
+const verifyJWT = async (token: string | undefined): Promise<boolean> => {
+  if (typeof token === undefined) {
+    return false
+  }
+  try {
+    let response = await fetch('http://localhost:1111/v1/user.verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ token }),
+    })
+    if (response.ok) {
+      return true
+    }
+  } catch (error) {
+    console.log(error)
+    return false
+  }
+  return false
+}
+const loginDisplayText = ref<string>('登陆')
+
+const computeDisplayText = (): string => {
+  let username = Cookies.get('username')
+  if (username != null) {
+    return username
+  } else {
+    return '登陆'
+  }
+}
+
+const loginStatus = ref<boolean>(false)
 </script>
 
 <template>
   <div class="root">
     <Transition name="masker">
-      <div class="masker" @click="cancelDialog" v-if="isActive"></div>
+      <div
+        class="masker"
+        @click="cancelDialog"
+        v-if="postIsActive || loginIsActive"
+      ></div>
     </Transition>
     <!-- <div class="debug-dialog">debug test</div> -->
+    <div class="login-wrapper" v-if="!loginStatus">
+      <button class="login-button" @click="loginButton()">
+        {{ loginDisplayText }}
+      </button>
+    </div>
+    <div class="login-dialog" :class="loginActiveCss">
+      <div class="login-dialog-banner">登陆账号</div>
+      <div class="login-dialog-username">
+        <input
+          class="login-dialog-username-input login-dialog-input"
+          placeholder="账号"
+          v-model="userInfo.username"
+        />
+      </div>
+      <div class="login-dialog-password">
+        <input
+          class="login-dialog-password-input login-dialog-input"
+          placeholder="密码"
+          v-model="userInfo.password"
+        />
+      </div>
+      <div class="login-dialog-submit">
+        <button class="login-dialog-submit-button" @click="loginSubmit()">
+          登陆
+        </button>
+      </div>
+    </div>
     <div class="post-dialog" :class="activeCss">
       <Transition name="post-dialog-transition">
         <div v-if="dialogDisplayDelay" class="post-dialog-wrapper">
@@ -312,7 +464,7 @@ const dialogDisplayDelay = ref<boolean>(false)
         <button @click="fetchData" class="fetch">fetch</button>
       </div>
       <div class="control">
-        <button @click="post" class="post" v-if="!isActive">
+        <button @click="post" class="post" v-if="!postIsActive">
           <span class="post-button">+</span>
         </button>
       </div>
@@ -534,6 +686,7 @@ const dialogDisplayDelay = ref<boolean>(false)
   transition: box-shadow 0.4s 0.1s;
   font-size: large;
   font-weight: bold;
+  border-color: #90abea;
 }
 
 .search::placeholder {
@@ -691,7 +844,6 @@ const dialogDisplayDelay = ref<boolean>(false)
 .post-dialog-button {
   border: 1px solid rgb(22, 30, 62);
   border-radius: 8px;
-
   display: flex;
   height: 100%;
   width: 100%;
@@ -784,6 +936,66 @@ const dialogDisplayDelay = ref<boolean>(false)
 }
 .post-dialog-transition-leave-to {
   opacity: 0;
+}
+.login-wrapper,
+.login-button {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  font-size: 18px;
+  font-weight: bolder;
+  color: aliceblue;
+}
+
+.login-dialog-positive {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.login-dialog {
+  display: flex;
+  position: fixed;
+  border: 3px solid var(--color-button-border);
+  border-radius: 6px;
+  height: 35vh;
+  width: 30vw;
+  top: 20vh;
+  left: 35vw;
+  background-color: #14181d;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  z-index: 2;
+  background-color: var(--background-alpha-color);
+}
+
+.login-dialog-banner {
+  font-size: 18px;
+  display: flex;
+  justify-content: center;
+  font-weight: bold;
+  margin: 18px 20px;
+}
+.login-dialog-input {
+  color: var(--color);
+  position: relative;
+  padding: 6px;
+  border: 3px solid var(--color);
+  border-radius: 6px;
+  outline: none;
+  transition: box-shadow 0.4s 0.1s;
+  font-size: large;
+  margin: 3px;
+}
+
+.login-dialog-submit-button {
+  margin: 12px;
+  border: 3px solid var(--color-green-border);
+  border-radius: 6px;
+  padding: 6px;
+  color: aliceblue;
+  font-size: large;
+  background-color: var(--color-green-bg);
 }
 .debug-dialog {
   z-index: 10;
