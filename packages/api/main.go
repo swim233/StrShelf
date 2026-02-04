@@ -39,7 +39,7 @@ type PostRequestResponse struct {
 }
 
 type UserInfo struct {
-	Username string `json:"username"`
+	Account  string `json:"account"`
 	Password string `json:"password"`
 }
 
@@ -63,7 +63,6 @@ func (ct *CustomTime) UnmarshalJSON(data []byte) error {
 func main() {
 	logger.InitLogger()
 	config.InitConfig()
-	logger.Suger.Infoln("test")
 	dsn := "host=localhost user=postgres dbname=strshelf port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -123,7 +122,7 @@ func main() {
 			return
 		}
 
-		err = gorm.G[any](db).Exec(context.Background(), "INSERT INTO public.shelf_user_v1 (username,password) VALUES(?,?)", newUser.Username, HashedPassword)
+		err = gorm.G[any](db).Exec(context.Background(), "INSERT INTO public.shelf_user_v1 (username,password) VALUES(?,?)", newUser.Account, HashedPassword)
 		if err != nil {
 			ctx.JSON(500, gin.H{"message": "internal error"})
 			logger.Suger.Errorf("error in insert database: %s", err.Error())
@@ -142,8 +141,9 @@ func main() {
 			ctx.JSON(500, gin.H{"message": "internal error"})
 			return
 		}
+		logger.Suger.Infoln(user)
 
-		matchUsers, err := gorm.G[UserInfo](db).Raw("SELECT * FROM public.shelf_user_v1 WHERE username = ?", user.Username).Find(context.Background())
+		matchUsers, err := gorm.G[UserInfo](db).Raw("SELECT * FROM public.shelf_user_v1 WHERE username = ?", user.Account).Find(context.Background())
 		if err != nil {
 			ctx.JSON(500, gin.H{"message": "error in insert database: " + err.Error()})
 			fmt.Println(err.Error())
@@ -157,7 +157,7 @@ func main() {
 				logger.Suger.Warnf("a failure logging request: %s", err.Error())
 				return
 			} else {
-				token := token.CreateJWT(user.Username)
+				token := token.CreateJWT(user.Account)
 				ctx.JSON(200, gin.H{"token": token})
 			}
 		} else {
