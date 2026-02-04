@@ -156,7 +156,7 @@ const postNewData = async () => {
     if (r.result) {
       notify({
         type: 'Success',
-        delayTime: 5000,
+        delayTime: 3000,
         mainMessage: '创建成功',
         subMessage: '项目创建成功',
       })
