@@ -11,6 +11,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.ilharper.com/strshelf/api/config"
 	"gopkg.ilharper.com/strshelf/api/logger"
+	"gopkg.ilharper.com/strshelf/api/middleware"
 	"gopkg.ilharper.com/strshelf/api/token"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -25,6 +26,12 @@ type ShelfItem struct {
 	GMTModified CustomTime `json:"gmt_modified"`
 	GMTDeleted  CustomTime `json:"gmt_deleted"`
 	Deleted     bool       `json:"deleted"`
+}
+type ShelfEditItem struct {
+	Id         uint64 `json:"id"`
+	NewTitle   string `json:"new_title"`
+	NewLink    string `json:"new_link"`
+	NewComment string `json:"new_comment"`
 }
 
 type StrShelfResponse[T any] struct {
@@ -71,12 +78,19 @@ func main() {
 
 	r := gin.Default()
 
-	r.Use(cors.Default())
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Authorization", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	r.POST("/v1/item.get", func(ctx *gin.Context) {
 		shelfItems, err := gorm.G[ShelfItem](db).Raw("SELECT * FROM public.shelf_item_v1 WHERE deleted IS NOT TRUE ORDER BY id DESC").Find(context.Background())
 		if err != nil {
-			ctx.JSON(500, gin.H{"message": "internal error"})
+			ctx.JSON(500, gin.H{"msg": "internal error"})
 			return
 		}
 
@@ -86,12 +100,12 @@ func main() {
 			Msg:  "",
 		})
 	})
-	r.POST("/v1/item.post", func(ctx *gin.Context) {
+	r.POST("/v1/item.post", middleware.JWTAuthMiddleWare(), func(ctx *gin.Context) {
 		newShelfItem := ShelfItem{}
 		result := gorm.WithResult()
 		err := ctx.ShouldBindJSON(&newShelfItem)
 		if err != nil {
-			ctx.JSON(500, gin.H{"message": "error in binding json: " + err.Error()})
+			ctx.JSON(500, gin.H{"msg": "error in binding json: " + err.Error()})
 			logger.Suger.Errorf("error in getting items: %s", err.Error())
 			return
 		}
@@ -99,7 +113,7 @@ func main() {
 		err = gorm.G[any](db).Exec(context.Background(), "INSERT INTO public.shelf_item_v1 (title,link,comment,deleted) VALUES(?,?,?,?)", newShelfItem.Title, newShelfItem.Link, newShelfItem.Comment, false)
 
 		if err != nil {
-			ctx.JSON(500, gin.H{"message": "internal error"})
+			ctx.JSON(500, gin.H{"msg": "internal error"})
 			logger.Suger.Errorf("error in insert database: %s", err.Error())
 			return
 		}
@@ -108,23 +122,53 @@ func main() {
 			Result: result,
 		})
 	})
+
+	r.POST("/v1/user.edit", middleware.JWTAuthMiddleWare(), func(ctx *gin.Context) {
+		editShelfItem := ShelfEditItem{}
+		result := gorm.WithResult()
+		err := ctx.ShouldBind(&editShelfItem)
+		if err != nil {
+			logger.Suger.Errorf("error in building editShelf: %s", err.Error())
+			ctx.JSON(500, gin.H{"msg": "internal error"})
+			return
+		}
+		shelfItems, err := gorm.G[ShelfItem](db).Raw("SELECT * FROM public.shelf_item_v1 WHERE deleted IS NOT TRUE AND id = ?", editShelfItem.Id).Find(context.Background())
+		if err != nil {
+			logger.Suger.Errorf("error in checking item: %s", err.Error())
+			ctx.JSON(400, gin.H{"msg": "internal error"})
+			return
+		}
+		if len(shelfItems) != 1 {
+			ctx.JSON(200, gin.H{"msg": "origin item not found", "code": "404"})
+			return
+		}
+		err = gorm.G[any](db).Exec(context.Background(), "UPDATE public.shelf_item_v1 SET title = ? ,link = ? , comment = ? ,gmt_modified = now() WHERE id = ?", editShelfItem.NewTitle, editShelfItem.NewLink, editShelfItem.NewComment, editShelfItem.Id)
+
+		if err != nil {
+			logger.Suger.Errorf("error in updating database: %s", err.Error())
+			ctx.JSON(500, gin.H{"msg": "internal error"})
+			return
+		}
+		ctx.JSON(200, gin.H{"msg": "ok", "result": result})
+	})
+
 	r.POST("/v1/user.signup", func(ctx *gin.Context) {
 		newUser := UserInfo{}
 		result := gorm.WithResult()
 		err := ctx.BindJSON(&newUser)
 		if err != nil {
-			ctx.JSON(500, gin.H{"message": "internal error"})
+			ctx.JSON(500, gin.H{"msg": "internal error"})
 			return
 		}
 		HashedPassword, err := HashPassword(newUser.Password)
 		if err != nil {
-			ctx.JSON(500, gin.H{"message": "internal error"})
+			ctx.JSON(500, gin.H{"msg": "internal error"})
 			return
 		}
 
 		err = gorm.G[any](db).Exec(context.Background(), "INSERT INTO public.shelf_user_v1 (username,password) VALUES(?,?)", newUser.Account, HashedPassword)
 		if err != nil {
-			ctx.JSON(500, gin.H{"message": "internal error"})
+			ctx.JSON(500, gin.H{"msg": "internal error"})
 			logger.Suger.Errorf("error in insert database: %s", err.Error())
 			return
 		}
@@ -138,14 +182,14 @@ func main() {
 		user := UserInfo{}
 		err := ctx.BindJSON(&user)
 		if err != nil {
-			ctx.JSON(500, gin.H{"message": "internal error"})
+			ctx.JSON(500, gin.H{"msg": "internal error"})
 			return
 		}
 		logger.Suger.Infoln(user)
 
 		matchUsers, err := gorm.G[UserInfo](db).Raw("SELECT * FROM public.shelf_user_v1 WHERE username = ?", user.Account).Find(context.Background())
 		if err != nil {
-			ctx.JSON(500, gin.H{"message": "error in insert database: " + err.Error()})
+			ctx.JSON(500, gin.H{"msg": "error in insert database: " + err.Error()})
 			fmt.Println(err.Error())
 			return
 		}
@@ -153,7 +197,7 @@ func main() {
 			matchUser := matchUsers[0]
 			err := bcrypt.CompareHashAndPassword([]byte(matchUser.Password), []byte(user.Password))
 			if err != nil {
-				ctx.JSON(401, gin.H{"message": "password is incorrect"})
+				ctx.JSON(401, gin.H{"msg": "password is incorrect"})
 				logger.Suger.Warnf("a failure logging request: %s", err.Error())
 				return
 			} else {
@@ -161,7 +205,7 @@ func main() {
 				ctx.JSON(200, gin.H{"token": token})
 			}
 		} else {
-			ctx.JSON(401, gin.H{"message": "user is not exist"})
+			ctx.JSON(401, gin.H{"msg": "user is not exist"})
 			return
 		}
 
@@ -171,23 +215,23 @@ func main() {
 		ctx.Bind(&tokenReq)
 		if err != nil {
 			logger.Suger.Errorf("error in verifying user token: %s", err.Error())
-			ctx.JSON(500, gin.H{"message": "internal error"})
+			ctx.JSON(500, gin.H{"msg": "internal error"})
 			return
 		}
 		if result, err := token.VerifyJWT(string(tokenReq.Token)); err != nil {
 			logger.Suger.Warnf("error in verifying user token: %s", err.Error())
 			logger.Suger.Warnf("received token: %s", tokenReq.Token)
 			ctx.JSON(401, gin.H{
-				"message": "token is invalid"})
+				"msg": "token is invalid"})
 			return
 		} else {
 
 			switch result {
 			case true:
-				ctx.JSON(200, gin.H{"message": "successful"})
+				ctx.JSON(200, gin.H{"msg": "successful"})
 			case false:
 				logger.Suger.Warnf("user post a error token: %s", tokenReq.Token)
-				ctx.JSON(401, gin.H{"message": "token is invalid"})
+				ctx.JSON(401, gin.H{"msg": "token is invalid"})
 			}
 			return
 		}
