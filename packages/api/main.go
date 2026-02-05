@@ -34,6 +34,10 @@ type ShelfEditItem struct {
 	NewComment string `json:"new_comment"`
 }
 
+type ShelfDeleteItem struct {
+	Id uint64 `json:"id"`
+}
+
 type StrShelfResponse[T any] struct {
 	Code uint16 `json:"code"`
 	Data T      `json:"data"`
@@ -73,7 +77,7 @@ func main() {
 	dsn := "host=localhost user=postgres dbname=strshelf port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		println(err.Error())
+		logger.Suger.Errorf("error when connect db: %s", err.Error())
 	}
 
 	r := gin.Default()
@@ -150,6 +154,35 @@ func main() {
 			return
 		}
 		ctx.JSON(200, gin.H{"msg": "ok", "result": result})
+	})
+
+	r.POST("/v1/user.delete", middleware.JWTAuthMiddleWare(), func(ctx *gin.Context) {
+		deleteItem := ShelfDeleteItem{}
+		err := ctx.BindJSON(&deleteItem)
+		if err != nil {
+			logger.Suger.Errorf("error when binding json: %s", err.Error())
+			ctx.JSON(400, gin.H{"msg": "internal error"})
+			return
+		}
+		shelfItems, err := gorm.G[ShelfItem](db).Raw("SELECT * FROM public.shelf_item_v1 WHERE deleted IS NOT TRUE AND id = ?", deleteItem.Id).Find(context.Background())
+		if err != nil {
+			logger.Suger.Errorf("error in checking item: %s", err.Error())
+			ctx.JSON(400, gin.H{"msg": "internal error"})
+			return
+		}
+		if len(shelfItems) != 1 {
+			ctx.JSON(200, gin.H{"msg": "origin item not found", "code": "404"})
+			return
+		}
+		err = gorm.G[any](db).Exec(context.Background(), "UPDATE public.shelf_item_v1 SET deleted = true ,gmt_deleted = now() WHERE id = ?", deleteItem.Id)
+
+		if err != nil {
+			logger.Suger.Errorf("error in updating database: %s", err.Error())
+			ctx.JSON(500, gin.H{"msg": "internal error"})
+			return
+		}
+		ctx.JSON(200, gin.H{"msg": "ok"})
+
 	})
 
 	r.POST("/v1/user.signup", func(ctx *gin.Context) {
