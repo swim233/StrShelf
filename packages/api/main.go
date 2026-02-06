@@ -245,7 +245,7 @@ func main() {
 	})
 	r.POST("/v1/user.verify", func(ctx *gin.Context) {
 		var tokenReq token.TokenRequest
-		ctx.Bind(&tokenReq)
+		err := ctx.Bind(&tokenReq)
 		if err != nil {
 			logger.Suger.Errorf("error in verifying user token: %s", err.Error())
 			ctx.JSON(500, gin.H{"msg": "internal error"})
@@ -270,7 +270,10 @@ func main() {
 		}
 	})
 
-	r.Run(":1111")
+	err = r.Run(":1111")
+	if err != nil {
+		logger.Suger.Panicf("fail to start http service: %s", err.Error())
+	}
 
 }
 
