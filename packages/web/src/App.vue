@@ -49,6 +49,8 @@ interface UserInfo {
 
 let noticeId = 0
 
+const serverAddr = 'http://localhost:1111'
+
 const saveDatas = ref<ShelfItem[]>([])
 onMounted(() => {
   notify({
@@ -61,7 +63,7 @@ onMounted(() => {
 })
 
 const fetchData = async () => {
-  let data = await fetch('http://localhost:1111/v1/item.get', {
+  let data = await fetch(serverAddr + '/v1/item.get', {
     method: 'POST',
   })
   let readItems = (await data.json()) as StrShelfResponse<ShelfItem[]>
@@ -143,7 +145,7 @@ const postNewData = async () => {
   dialogDisplayDelay.value = false
 
   try {
-    let response = await fetch('http://localhost:1111/v1/item.post', {
+    let response = await fetch(serverAddr + '/v1/item.post', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -278,7 +280,7 @@ const login = async (account: string, password: string): Promise<boolean> => {
   if (isTokenValid) {
     return true
   }
-  let response = await fetch('http://localhost:1111/v1/user.login', {
+  let response = await fetch(serverAddr + '/v1/user.login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -307,7 +309,7 @@ const verifyJWT = async (token: string | undefined): Promise<boolean> => {
     return false
   }
   try {
-    let response = await fetch('http://localhost:1111/v1/user.verify', {
+    let response = await fetch(serverAddr + '/v1/user.verify', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
