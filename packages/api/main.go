@@ -83,7 +83,7 @@ func main() {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Authorization", "Content-Type"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -218,12 +218,12 @@ func main() {
 			ctx.JSON(500, gin.H{"msg": "internal error"})
 			return
 		}
-		logger.Suger.Infoln(user)
+		logger.Suger.Debugln(user)
 
 		matchUsers, err := gorm.G[UserInfo](db).Raw("SELECT * FROM public.shelf_user_v1 WHERE username = ?", user.Account).Find(context.Background())
 		if err != nil {
 			ctx.JSON(500, gin.H{"msg": "error in insert database: " + err.Error()})
-			fmt.Println(err.Error())
+			logger.Suger.Errorf("error in matching login user: %s", err.Error())
 			return
 		}
 		if len(matchUsers) == 1 {
