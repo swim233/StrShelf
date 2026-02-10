@@ -245,3 +245,6 @@ go.work.sum
 
 # Json config
 config.json
+
+# Dist
+dist/
