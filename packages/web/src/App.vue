@@ -48,9 +48,8 @@ interface UserInfo {
 }
 
 let noticeId = 0
-
-const baseUrl =
-  process.env['NODE_ENV'] === 'development' ? 'http://127.0.0.1:1111' : ''
+const devMode: boolean = process.env['NODE_ENV'] === 'development'
+const baseUrl = devMode ? 'http://127.0.0.1:1111' : ''
 
 const saveDatas = ref<ShelfItem[]>([])
 onMounted(() => {
@@ -61,6 +60,7 @@ onMounted(() => {
   })
   fetchData()
   loginDisplayText.value = computeDisplayText()
+  console.log(devMode)
 })
 
 const fetchData = async () => {
@@ -464,7 +464,7 @@ const loginStatus = ref<boolean>(false)
         </div>
       </TransitionGroup>
     </div>
-    <div class="control-wrapper">
+    <div class="control-wrapper" v-if="devMode">
       <div class="control">
         <button @click="mockDate" class="mock">mock</button>
       </div>
