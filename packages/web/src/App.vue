@@ -48,7 +48,7 @@ interface UserInfo {
 }
 
 let noticeId = 0
-const devMode: boolean = process.env['NODE_ENV'] === 'development'
+const devMode: boolean = import.meta.env.MODE === 'development'
 const baseUrl = devMode ? 'http://127.0.0.1:1111' : ''
 
 const saveDatas = ref<ShelfItem[]>([])
