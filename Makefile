@@ -1,6 +1,6 @@
 .PHONY: install build
 
-build: install build_frontend build_backend
+build: install clean build_frontend build_backend
 
 install:
 	npm install
