@@ -49,7 +49,8 @@ interface UserInfo {
 
 let noticeId = 0
 
-const serverAddr = 'http://localhost:1111'
+const baseUrl =
+  process.env['NODE_ENV'] === 'development' ? 'http://127.0.0.1:1111' : ''
 
 const saveDatas = ref<ShelfItem[]>([])
 onMounted(() => {
@@ -63,7 +64,7 @@ onMounted(() => {
 })
 
 const fetchData = async () => {
-  let data = await fetch(serverAddr + '/v1/item.get', {
+  let data = await fetch(baseUrl + '/v1/item.get', {
     method: 'POST',
   })
   let readItems = (await data.json()) as StrShelfResponse<ShelfItem[]>
@@ -145,7 +146,7 @@ const postNewData = async () => {
   dialogDisplayDelay.value = false
 
   try {
-    let response = await fetch(serverAddr + '/v1/item.post', {
+    let response = await fetch(baseUrl + '/v1/item.post', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -280,7 +281,7 @@ const login = async (account: string, password: string): Promise<boolean> => {
   if (isTokenValid) {
     return true
   }
-  let response = await fetch(serverAddr + '/v1/user.login', {
+  let response = await fetch(baseUrl + '/v1/user.login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -309,7 +310,7 @@ const verifyJWT = async (token: string | undefined): Promise<boolean> => {
     return false
   }
   try {
-    let response = await fetch(serverAddr + '/v1/user.verify', {
+    let response = await fetch(baseUrl + '/v1/user.verify', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -438,6 +439,14 @@ const loginStatus = ref<boolean>(false)
             </div>
             <div class="day">{{ displayData.date.getDate() }}</div>
             <div class="month">{{ displayData.date.getMonth() + 1 }}月</div>
+          </div>
+          <div class="edit">
+            <button @click="">
+              <Icons class="edit-icon" :icon="'Edit'" />
+            </button>
+          </div>
+          <div class="delete">
+            <Icons class="delete-icon" :icon="'delete'" />
           </div>
           <div>
             <div
@@ -634,11 +643,33 @@ const loginStatus = ref<boolean>(false)
 .day:hover {
   text-shadow: 0 0 24px var(--animation-color);
 }
+
+.edit,
+.delete {
+  transition: all 0.5s;
+  transition-delay: 0.1s;
+  margin-top: 6px;
+  opacity: 0;
+}
+.edit {
+  margin-right: 6px;
+}
+.edit-icon {
+  color: rgb(83, 124, 221);
+}
+.delete-icon {
+  color: #8d2832;
+}
+.content:hover .edit,
+.content:hover .delete {
+  opacity: 1;
+}
+
 .content {
   display: flex;
 }
 .content-inner {
-  margin-left: 36px;
+  margin-left: 30px;
   margin-top: 6px;
 }
 .content-inner-comment {
