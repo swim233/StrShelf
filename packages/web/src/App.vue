@@ -164,7 +164,7 @@ const postNewData = async () => {
         subMessage: '项目创建成功',
       })
       fetchData()
-    } else if (r.code == 401) {
+    } else if (response.status == 401) {
       notify({
         type: 'Error',
         delayTime: 3000,
