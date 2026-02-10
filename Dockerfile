@@ -16,7 +16,7 @@ FROM golang:1.25.7-trixie AS be
 WORKDIR /app
 COPY . /app
 
-COPY --from=fe /app/packages/api/dist /app/packages/api
+COPY --from=fe /app/packages/api/dist /app/packages/api/dist
 
 RUN apt-get update && apt-get install -y \
     make \
