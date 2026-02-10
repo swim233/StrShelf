@@ -464,14 +464,14 @@ const loginStatus = ref<boolean>(false)
         </div>
       </TransitionGroup>
     </div>
-    <div class="control-wrapper" v-if="devMode">
-      <div class="control">
+    <div class="control-wrapper">
+      <div class="control" v-if="devMode">
         <button @click="mockDate" class="mock">mock</button>
       </div>
-      <div class="control">
+      <div class="control" v-if="devMode">
         <button @click="reset" class="reset">reset</button>
       </div>
-      <div class="control">
+      <div class="control" v-if="devMode">
         <button @click="fetchData" class="fetch">fetch</button>
       </div>
       <div class="control">
