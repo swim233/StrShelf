@@ -15,9 +15,10 @@ var ConfigInstance Config
 func InitConfig() {
 	ViperInstance = viper.New()
 	v := ViperInstance
+	v.AddConfigPath("packages/api/config/")
+	v.AddConfigPath("./config/")
 	v.AddConfigPath("./")
 	v.AddConfigPath(".")
-	v.AddConfigPath("packages/api/config/")
 	v.SetConfigName("config.json")
 	v.SetConfigType("json")
 	err := v.ReadInConfig()

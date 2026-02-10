@@ -144,7 +144,7 @@ func main() {
 		})
 	})
 
-	r.POST("/v1/user.edit", middleware.JWTAuthMiddleWare(), func(ctx *gin.Context) {
+	r.POST("/v1/item.edit", middleware.JWTAuthMiddleWare(), func(ctx *gin.Context) {
 		editShelfItem := ShelfEditItem{}
 		result := gorm.WithResult()
 		err := ctx.ShouldBind(&editShelfItem)
@@ -173,7 +173,7 @@ func main() {
 		ctx.JSON(200, gin.H{"msg": "ok", "result": result})
 	})
 
-	r.POST("/v1/user.delete", middleware.JWTAuthMiddleWare(), func(ctx *gin.Context) {
+	r.POST("/v1/item.delete", middleware.JWTAuthMiddleWare(), func(ctx *gin.Context) {
 		deleteItem := ShelfDeleteItem{}
 		err := ctx.BindJSON(&deleteItem)
 		if err != nil {
@@ -201,34 +201,35 @@ func main() {
 		ctx.JSON(200, gin.H{"msg": "ok"})
 
 	})
+	if viper.GetBool("allow_signup") {
+		r.POST("/v1/user.signup", func(ctx *gin.Context) {
+			newUser := UserInfo{}
+			result := gorm.WithResult()
+			err := ctx.BindJSON(&newUser)
+			if err != nil {
+				ctx.JSON(500, gin.H{"msg": "internal error"})
+				return
+			}
+			HashedPassword, err := HashPassword(newUser.Password)
+			if err != nil {
+				ctx.JSON(500, gin.H{"msg": "internal error"})
+				return
+			}
 
-	r.POST("/v1/user.signup", func(ctx *gin.Context) {
-		newUser := UserInfo{}
-		result := gorm.WithResult()
-		err := ctx.BindJSON(&newUser)
-		if err != nil {
-			ctx.JSON(500, gin.H{"msg": "internal error"})
-			return
-		}
-		HashedPassword, err := HashPassword(newUser.Password)
-		if err != nil {
-			ctx.JSON(500, gin.H{"msg": "internal error"})
-			return
-		}
+			err = gorm.G[any](db).Exec(context.Background(), "INSERT INTO public.shelf_user_v1 (username,password) VALUES(?,?)", newUser.Account, HashedPassword)
+			if err != nil {
+				ctx.JSON(500, gin.H{"msg": "internal error"})
+				logger.Suger.Errorf("error in insert database: %s", err.Error())
+				return
+			}
+			ctx.JSON(200, PostRequestResponse{
+				Code:   200,
+				Result: result,
+			})
 
-		err = gorm.G[any](db).Exec(context.Background(), "INSERT INTO public.shelf_user_v1 (username,password) VALUES(?,?)", newUser.Account, HashedPassword)
-		if err != nil {
-			ctx.JSON(500, gin.H{"msg": "internal error"})
-			logger.Suger.Errorf("error in insert database: %s", err.Error())
-			return
-		}
-		ctx.JSON(200, PostRequestResponse{
-			Code:   200,
-			Result: result,
 		})
+	}
 
-	})
-	
 	r.POST("/v1/user.login", func(ctx *gin.Context) {
 		user := UserInfo{}
 		err := ctx.BindJSON(&user)
