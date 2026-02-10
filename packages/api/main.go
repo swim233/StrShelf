@@ -2,12 +2,17 @@ package main
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.ilharper.com/strshelf/api/config"
 	"gopkg.ilharper.com/strshelf/api/logger"
@@ -16,6 +21,9 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
+
+//go:embed dist
+var app embed.FS
 
 type ShelfItem struct {
 	Id          uint64     `json:"id"`
@@ -74,7 +82,16 @@ func (ct *CustomTime) UnmarshalJSON(data []byte) error {
 func main() {
 	logger.InitLogger()
 	config.InitConfig()
-	dsn := "host=localhost user=postgres dbname=strshelf port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+
+	dsn := func() string {
+		if dsn := viper.GetString("dsn"); dsn != "" {
+			return dsn
+		} else {
+			return "host=localhost user=postgres dbname=strshelf port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+
+		}
+	}()
+
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		logger.Suger.Errorf("error when connect db: %s", err.Error())
@@ -211,6 +228,7 @@ func main() {
 		})
 
 	})
+	
 	r.POST("/v1/user.login", func(ctx *gin.Context) {
 		user := UserInfo{}
 		err := ctx.BindJSON(&user)
@@ -267,6 +285,22 @@ func main() {
 				ctx.JSON(401, gin.H{"msg": "token is invalid"})
 			}
 			return
+		}
+	})
+
+	dist, err := static.EmbedFolder(app, "dist")
+	if err != nil {
+		logger.Suger.Panicf("can not load embed folder: %s", err.Error())
+	}
+	staticServer := static.Serve("/", dist)
+
+	r.Use(staticServer)
+	r.NoRoute(func(c *gin.Context) {
+		if c.Request.Method == http.MethodGet &&
+			!strings.ContainsRune(c.Request.URL.Path, '.') &&
+			!strings.HasPrefix(c.Request.URL.Path, "/v1/") {
+			c.Request.URL.Path = "/"
+			staticServer(c)
 		}
 	})
 
