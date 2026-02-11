@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y \
     make \
     && rm -rf /var/lib/apt/lists/*
 
-RUN make build_backend
+RUN CGO_ENABLED=0 make build_backend
 
 FROM alpine:3.23.3
 
