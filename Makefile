@@ -2,6 +2,7 @@
 
 build: install clean build_frontend build_backend
 	@echo -e "\e[1;34mall target success complete!\e[0m"
+
 install:
 	@echo -e "\e[1;34minstalling npm module...\e[0m"
 	npm install
