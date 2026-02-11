@@ -84,7 +84,7 @@ make build
 
 ```bash
 cd packages/api
-go run main.go
+go run -ldflags="-X 'gopkg.ilharper.com/strshelf/api/config.DebugModeStr=true'" main.go
 ```
 
 **启动前端开发服务器**
