@@ -304,8 +304,11 @@ func main() {
 			staticServer(c)
 		}
 	})
-
-	err = r.Run(":1111")
+	port := viper.GetString("port")
+	if port == "" {
+		logger.Suger.Warnln("can not read port in config,using default port :1111")
+	}
+	err = r.Run(":" + port)
 	if err != nil {
 		logger.Suger.Panicf("fail to start http service: %s", err.Error())
 	}
