@@ -8,7 +8,8 @@
     "ilharper",
     "signup",
     "sslmode",
-    "strshelf"
+    "strshelf",
+    "Warnln"
   ],
   "stm32-for-vscode.openOCDPath": false
 }
