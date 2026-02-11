@@ -58,7 +58,7 @@ type PostRequestResponse struct {
 }
 
 type UserInfo struct {
-	Account  string `json:"account"`
+	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
@@ -217,12 +217,13 @@ func main() {
 				return
 			}
 
-			err = gorm.G[any](db).Exec(context.Background(), "INSERT INTO public.shelf_user_v1 (username,password) VALUES(?,?)", newUser.Account, HashedPassword)
+			err = gorm.G[any](db).Exec(context.Background(), "INSERT INTO public.shelf_user_v1 (username,password) VALUES(?,?)", newUser.Username, HashedPassword)
 			if err != nil {
 				ctx.JSON(500, gin.H{"msg": "internal error"})
 				logger.Suger.Errorf("error in insert database: %s", err.Error())
 				return
 			}
+			logger.Suger.Debugf("dev: %v", newUser)
 			ctx.JSON(200, PostRequestResponse{
 				Code:   200,
 				Result: result,
@@ -240,7 +241,7 @@ func main() {
 		}
 		logger.Suger.Debugln(user)
 
-		matchUsers, err := gorm.G[UserInfo](db).Raw("SELECT * FROM public.shelf_user_v1 WHERE username = ?", user.Account).Find(context.Background())
+		matchUsers, err := gorm.G[UserInfo](db).Raw("SELECT * FROM public.shelf_user_v1 WHERE username = ?", user.Username).Find(context.Background())
 		if err != nil {
 			ctx.JSON(500, gin.H{"msg": "error in insert database: " + err.Error()})
 			logger.Suger.Errorf("error in matching login user: %s", err.Error())
@@ -254,7 +255,7 @@ func main() {
 				logger.Suger.Warnf("a failure logging request: %s", err.Error())
 				return
 			} else {
-				token := token.CreateJWT(user.Account)
+				token := token.CreateJWT(user.Username)
 				ctx.JSON(200, gin.H{"token": token})
 			}
 		} else {
