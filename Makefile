@@ -18,3 +18,13 @@ build_backend:
 	cd packages/api && \
 	mkdir -p ../../build/bin && \
 	go build -v -o ../../build/bin/strshelf
+
+run: run_backend run_frontend
+
+run_backend:
+	cd packages/api && \
+	go run main.go
+
+run_frontend:
+	cd packages/web && \
+	npm run dev -- --host
