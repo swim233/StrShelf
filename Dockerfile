@@ -30,4 +30,6 @@ WORKDIR /app
 
 COPY --from=be /app/build/bin/strshelf /app
 
+RUN apk add --no-cache tzdata
+
 CMD [ "/app/strshelf" ]
