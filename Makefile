@@ -1,3 +1,15 @@
+VERSION=$(shell git describe --tags --always --dirty)
+GIT_COMMIT=$(shell git rev-parse HEAD)
+BUILD_TIME=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
+GO_VERSION=$(shell go version | awk '{print $$3}')
+define _LDFLAGS
+-ldflags "-X gopkg.ilharper.com/strshelf/api/utils.Version=$(VERSION) \
+-X gopkg.ilharper.com/strshelf/api/utils.GitCommit=$(GIT_COMMIT) \
+-X gopkg.ilharper.com/strshelf/api/utils.BuildTime=$(BUILD_TIME) \
+-X gopkg.ilharper.com/strshelf/api/utils.GoVersion=$(GO_VERSION) \
+-X gopkg.ilharper.com/strshelf/api/config.DebugModeStr=$1"
+endef
+
 .PHONY: install build
 
 build: install clean build_frontend build_backend
@@ -18,16 +30,17 @@ build_frontend:
 	cp -rv packages/web/dist/ packages/api/
 
 build_backend:
-	@echo -e "\e[1;34mbuilding go binary file...\e[0m"
+	@echo "Building with DebugModeStr=false"
 	cd packages/api && \
 	mkdir -p ../../build/bin && \
-	go build -ldflags="-X 'gopkg.ilharper.com/strshelf/api/config.DebugModeStr=false'" -v -o ../../build/bin/strshelf
+	go build $(call _LDFLAGS,false) -v -o ../../build/bin/strshelf
 
 run: run_backend run_frontend
 
 run_backend:
+	@echo "Running with DebugModeStr=true"
 	cd packages/api && \
-	go run -ldflags="-X 'gopkg.ilharper.com/strshelf/api/config.DebugModeStr=true'" main.go
+	go run $(call _LDFLAGS,true) main.go
 
 run_frontend:
 	cd packages/web && \

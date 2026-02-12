@@ -18,6 +18,7 @@ import (
 	"gopkg.ilharper.com/strshelf/api/logger"
 	"gopkg.ilharper.com/strshelf/api/middleware"
 	"gopkg.ilharper.com/strshelf/api/token"
+	"gopkg.ilharper.com/strshelf/api/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -82,7 +83,7 @@ func (ct *CustomTime) UnmarshalJSON(data []byte) error {
 func main() {
 	logger.InitLogger()
 	config.InitConfig()
-
+	logger.Suger.Infoln(utils.GetVersion())
 	dsn := func() string {
 		if dsn := viper.GetString("dsn"); dsn != "" {
 			return dsn
@@ -202,6 +203,7 @@ func main() {
 		ctx.JSON(200, gin.H{"msg": "ok"})
 
 	})
+	//TODO:对空username和密码判空
 	if viper.GetBool("allow_signup") {
 		r.POST("/v1/user.signup", func(ctx *gin.Context) {
 			newUser := UserInfo{}
