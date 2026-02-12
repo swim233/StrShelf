@@ -52,13 +52,17 @@ const devMode: boolean = import.meta.env.MODE === 'development'
 const baseUrl = devMode ? 'http://192.168.50.114:1111' : ''
 
 const saveDatas = ref<ShelfItem[]>([])
-onMounted(() => {
+onMounted(async () => {
   notify({
     type: 'Info',
     delayTime: 3000,
     mainMessage: '正在获取列表',
   })
   fetchData()
+  let result = await verifyJWT(Cookies.get('token'))
+  if (result) {
+    loginStatus.value = true
+  }
   loginDisplayText.value = computeDisplayText()
   console.log(devMode)
 })
@@ -384,6 +388,7 @@ const loginSubmit = async () => {
       delayTime: 3000,
       mainMessage: '登陆成功',
     })
+    loginStatus.value = true
     loginDisplayText.value = userInfo.value.username
   } else {
     notify({
@@ -494,7 +499,7 @@ const loginStatus = ref<boolean>(false)
       ></div>
     </Transition>
     <!-- <div class="debug-dialog">debug test</div> -->
-    <div class="login-wrapper" v-if="!loginStatus">
+    <div class="login-wrapper">
       <button class="login-button" @click="loginButton()">
         {{ loginDisplayText }}
       </button>
@@ -521,7 +526,7 @@ const loginStatus = ref<boolean>(false)
         </button>
       </div>
     </div>
-    <div class="post-dialog" :class="activeCss">
+    <div class="post-dialog" v-if="loginStatus" :class="activeCss">
       <Transition name="post-dialog-transition">
         <div v-if="dialogDisplayDelay" class="post-dialog-wrapper">
           <div class="post-dialog-banner">新建项目</div>
@@ -1315,6 +1320,6 @@ const loginStatus = ref<boolean>(false)
 }
 
 *::selection {
-  color: var(--color);
+  color: #4c97ff;
 }
 </style>
