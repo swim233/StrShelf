@@ -274,7 +274,7 @@ const loginActiveCss = computed<string>(() => {
 
 const dialogDisplayDelay = ref<boolean>(false)
 
-const login = async (account: string, password: string): Promise<boolean> => {
+const login = async (username: string, password: string): Promise<boolean> => {
   let token = Cookies.get('token')
   console.log('token from cookies: ' + token)
   let isTokenValid = await verifyJWT(token)
@@ -286,7 +286,7 @@ const login = async (account: string, password: string): Promise<boolean> => {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ account, password }),
+    body: JSON.stringify({ username, password }),
   })
 
   if (response.ok) {
@@ -294,7 +294,7 @@ const login = async (account: string, password: string): Promise<boolean> => {
     if (await verifyJWT(data.token)) {
       console.log('verify success before set token')
       Cookies.set('token', data.token)
-      Cookies.set('username', account)
+      Cookies.set('username', username)
       return true
     } else {
       console.log('fail to verifyJWT!: ' + data.token)

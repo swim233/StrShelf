@@ -106,7 +106,7 @@ POST /v1/user.login
 Content-Type: application/json
 
 {
-  "account": "username",
+  "username": "username",
   "password": "password"
 }
 
@@ -139,7 +139,7 @@ POST /v1/user.signup
 Content-Type: application/json
 
 {
-  "account": "newuser",
+  "username": "newuser",
   "password": "password"
 }
 ```

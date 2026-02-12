@@ -241,7 +241,6 @@ func main() {
 			ctx.JSON(500, gin.H{"msg": "internal error"})
 			return
 		}
-		logger.Suger.Debugln(user)
 
 		matchUsers, err := gorm.G[UserInfo](db).Raw("SELECT * FROM public.shelf_user_v1 WHERE username = ?", user.Username).Find(context.Background())
 		if err != nil {
