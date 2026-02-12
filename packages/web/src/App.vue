@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, TransitionGroup } from 'vue'
+import { computed, onMounted, ref, toRaw, TransitionGroup } from 'vue'
 import './components/views/Icons.vue'
 import Icons from './components/views/Icons.vue'
 import Cookies from 'js-cookie'
@@ -49,7 +49,7 @@ interface UserInfo {
 
 let noticeId = 0
 const devMode: boolean = import.meta.env.MODE === 'development'
-const baseUrl = devMode ? 'http://127.0.0.1:1111' : ''
+const baseUrl = devMode ? 'http://192.168.50.114:1111' : ''
 
 const saveDatas = ref<ShelfItem[]>([])
 onMounted(() => {
@@ -74,6 +74,7 @@ const fetchData = async () => {
       type: 'Success',
       delayTime: 5000,
       mainMessage: '获取成功',
+      subMessage: '成功加载 ' + saveDatas.value.length.toString() + ' 条记录',
     })
   } else {
     notify({
@@ -201,6 +202,85 @@ const newData = ref<ShelfItem>({
   deleted: false,
 })
 
+const postEditedData = async () => {
+  let editedData: ShelfItem = {
+    id: editData.value.id,
+    title: editData.value.title,
+    link: editData.value.link,
+    comment: editData.value.comment,
+    gmt_created: 0,
+    gmt_modified: 0,
+    gmt_deleted: 0,
+    deleted: false,
+  }
+  editIsActive.value = false
+  dialogDisplayDelay.value = false
+
+  try {
+    let response = await fetch(baseUrl + '/v1/item.edit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + Cookies.get('token'),
+      },
+      body: JSON.stringify({
+        id: editedData.id,
+        new_title: editedData.title,
+        new_link: editedData.link,
+        new_comment: editedData.comment,
+      }),
+    })
+
+    let r = (await response.json()) as PostResult
+    if (r.result) {
+      notify({
+        type: 'Success',
+        delayTime: 3000,
+        mainMessage: '修改成功',
+      })
+      fetchData()
+    } else if (response.status == 401) {
+      notify({
+        type: 'Error',
+        delayTime: 3000,
+        mainMessage: '身份验证失败',
+        subMessage: '请重新登陆',
+      })
+      loginStatus.value = false
+    } else {
+      notify({
+        type: 'Error',
+        delayTime: 5000,
+        mainMessage: '修改失败',
+        subMessage: '项目修改失败 请检查网络',
+      })
+    }
+  } catch (error) {
+    notify({
+      type: 'Error',
+      delayTime: 5000,
+      mainMessage: '修改失败',
+      subMessage: '项目修改失败 请检查网络',
+    })
+  }
+  editData.value = getNullShelfItem()
+}
+
+const getNullShelfItem = (): ShelfItem => {
+  return {
+    id: 0,
+    title: '',
+    link: '',
+    comment: '',
+    gmt_created: 0,
+    gmt_modified: 0,
+    gmt_deleted: 0,
+    deleted: false,
+  }
+}
+
+const editData = ref<ShelfItem>(getNullShelfItem())
+
 const searchString = ref<string>('')
 
 //reset
@@ -210,6 +290,8 @@ const reset = () => {
 
 const postIsActive = ref<boolean>(false)
 const loginIsActive = ref<boolean>(false)
+const editIsActive = ref<boolean>(false)
+const removeIsActive = ref<boolean>(false)
 let timeout: ReturnType<typeof setTimeout> | null = null
 
 const post = () => {
@@ -223,6 +305,67 @@ const post = () => {
     dialogDisplayDelay.value = true
   }, 300)
 }
+
+const edit = (item: ShelfItem) => {
+  editData.value = structuredClone(toRaw(item))
+  editIsActive.value = true
+}
+
+const removeId = ref<number>(0)
+
+const remove = (id: number) => {
+  removeId.value = id
+  removeIsActive.value = true
+}
+
+const submitRemove = async () => {
+  removeIsActive.value = false
+  dialogDisplayDelay.value = false
+
+  try {
+    let response = await fetch(baseUrl + '/v1/item.delete', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + Cookies.get('token'),
+      },
+      body: JSON.stringify({ id: removeId.value }),
+    })
+
+    let r = (await response.json()) as PostResult
+    if (r.result) {
+      notify({
+        type: 'Success',
+        delayTime: 3000,
+        mainMessage: '修改成功',
+      })
+      fetchData()
+    } else if (response.status == 401) {
+      notify({
+        type: 'Error',
+        delayTime: 3000,
+        mainMessage: '身份验证失败',
+        subMessage: '请重新登陆',
+      })
+      loginStatus.value = false
+    } else {
+      notify({
+        type: 'Error',
+        delayTime: 5000,
+        mainMessage: '修改失败',
+        subMessage: '项目修改失败 请检查网络',
+      })
+    }
+  } catch (error) {
+    notify({
+      type: 'Error',
+      delayTime: 5000,
+      mainMessage: '修改失败',
+      subMessage: '项目修改失败 请检查网络',
+    })
+  }
+}
+
 const loginOverlay = ref<boolean>(false)
 const loginButton = () => {
   loginOverlay.value = true
@@ -258,6 +401,7 @@ const loginSubmit = async () => {
 const cancelDialog = () => {
   postIsActive.value = false
   loginIsActive.value = false
+  editIsActive.value = false
   dialogDisplayDelay.value = false
 
   if (timeout) {
@@ -346,7 +490,7 @@ const loginStatus = ref<boolean>(false)
       <div
         class="masker"
         @click="cancelDialog"
-        v-if="postIsActive || loginIsActive"
+        v-if="postIsActive || loginIsActive || editIsActive"
       ></div>
     </Transition>
     <!-- <div class="debug-dialog">debug test</div> -->
@@ -416,7 +560,43 @@ const loginStatus = ref<boolean>(false)
         </div>
       </Transition>
     </div>
-
+    <div class="edit-dialog" v-if="editIsActive">
+      <div v-if="editIsActive" class="edit-dialog-wrapper">
+        <div class="edit-dialog-banner">编辑项目</div>
+        <div class="edit-dialog-content">
+          <span class="edit-dialog-content-name-wrapper">
+            标题
+            <input
+              class="edit-dialog-content-input edit-dialog-title-input"
+              placeholder=""
+              v-model="editData.title"
+            />
+            <br />
+          </span>
+          <span class="edit-dialog-content-link-wrapper">
+            链接
+            <input
+              class="edit-dialog-content-input edit-dialog-link-input"
+              v-model="editData.link"
+            />
+            <br />
+          </span>
+          <span class="edit-dialog-content-comment-wrapper"
+            >评论
+            <input
+              placeholder=""
+              class="edit-dialog-content-input"
+              v-model="editData.comment"
+            />
+          </span>
+        </div>
+        <div class="edit-dialog-button-wrapper">
+          <button class="edit-dialog-button" @click="postEditedData()">
+            提交
+          </button>
+        </div>
+      </div>
+    </div>
     <div class="search-wrapper">
       <input class="search" id="search" placeholder="" v-model="searchString" />
       <label class="search-label" for="search">搜索</label>
@@ -440,25 +620,27 @@ const loginStatus = ref<boolean>(false)
             <div class="day">{{ displayData.date.getDate() }}</div>
             <div class="month">{{ displayData.date.getMonth() + 1 }}月</div>
           </div>
-          <div class="edit">
-            <button @click="">
-              <Icons class="edit-icon" :icon="'Edit'" />
-            </button>
-          </div>
-          <div class="delete">
-            <Icons class="delete-icon" :icon="'delete'" />
-          </div>
-          <div>
+          <div class="content-inner-outer">
             <div
               class="content-inner"
               v-for="data in displayData.saveDatas"
               :key="data.id"
             >
-              <div class="content-inner-title">{{ data.title }}</div>
-              <a class="content-inner-link" :href="data.link">{{
-                data.link
-              }}</a>
-              <div class="content-inner-comment">{{ data.comment }}</div>
+              <div class="edit">
+                <button @click="edit(data)">
+                  <Icons class="edit-icon" :icon="'Edit'" />
+                </button>
+              </div>
+              <div class="delete">
+                <Icons class="delete-icon" :icon="'Delete'" />
+              </div>
+              <div>
+                <div class="content-inner-title">{{ data.title }}</div>
+                <a class="content-inner-link" :href="data.link">{{
+                  data.link
+                }}</a>
+                <div class="content-inner-comment">{{ data.comment }}</div>
+              </div>
             </div>
           </div>
         </div>
@@ -646,9 +828,10 @@ const loginStatus = ref<boolean>(false)
 
 .edit,
 .delete {
+  display: flex;
   transition: all 0.5s;
   transition-delay: 0.1s;
-  margin-top: 6px;
+  margin-right: 12px;
   opacity: 0;
 }
 .edit {
@@ -660,8 +843,8 @@ const loginStatus = ref<boolean>(false)
 .delete-icon {
   color: #8d2832;
 }
-.content:hover .edit,
-.content:hover .delete {
+.content-inner:hover .edit,
+.content-inner:hover .delete {
   opacity: 1;
 }
 
@@ -669,7 +852,8 @@ const loginStatus = ref<boolean>(false)
   display: flex;
 }
 .content-inner {
-  margin-left: 30px;
+  display: flex;
+  align-items: flex-start;
   margin-top: 6px;
 }
 .content-inner-comment {
@@ -875,6 +1059,96 @@ const loginStatus = ref<boolean>(false)
   border-radius: 8px;
 }
 .post-dialog-button {
+  border: 1px solid rgb(22, 30, 62);
+  border-radius: 8px;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: 800;
+  font-size: 24px;
+  background-color: #516a89;
+}
+
+/* edit */
+
+.edit-dialog {
+  color: white;
+  display: flex;
+  position: fixed;
+  border: 5px solid var(--color-button-border);
+  border-radius: 8px;
+  background-color: #516a89;
+  bottom: 10px;
+  right: 10px;
+  z-index: 4;
+  transition: all 0.3s;
+  transform-origin: bottom right;
+}
+
+.edit-dialog {
+  display: flex;
+  width: 70vw;
+  height: 60vh;
+  transform: translate(-20%, -20%);
+  opacity: 1;
+  color: #14181d;
+  background-color: #14181d;
+}
+
+.edit-dialog-wrapper {
+  color: #ced4d9;
+  width: 100%;
+  height: 100%;
+  font-size: large;
+  font-weight: bold;
+}
+
+.edit-dialog-banner {
+  font-size: 30px;
+  display: flex;
+  justify-content: center;
+  font-weight: bold;
+  margin: 20px 20px;
+}
+
+.edit-dialog-content * {
+  margin: 20px 0 0 20px;
+  font-weight: 800;
+  font-size: 24px;
+}
+.edit-dialog-content-input {
+  color: var(--color);
+  position: relative;
+  padding: 12px;
+  border: 3px solid var(--color);
+  border-radius: 6px;
+  outline: none;
+  transition: box-shadow 0.4s 0.1s;
+  font-size: large;
+  font-weight: bold;
+}
+
+.edit-dialog-title-input:required:invalid,
+.edit-dialog-link-input:required:invalid {
+  border-color: var(--color-red-border);
+}
+.edit-dialog-content-input::placeholder {
+  color: var(--color);
+}
+
+.edit-dialog-button-wrapper {
+  position: absolute;
+  height: 60px;
+  width: 90px;
+  bottom: 30px;
+  right: 30px;
+  border: 4px solid rgb(22, 30, 62);
+  border-radius: 8px;
+}
+.edit-dialog-button {
   border: 1px solid rgb(22, 30, 62);
   border-radius: 8px;
   display: flex;

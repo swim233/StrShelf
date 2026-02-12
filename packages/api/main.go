@@ -155,6 +155,7 @@ func main() {
 			ctx.JSON(500, gin.H{"msg": "internal error"})
 			return
 		}
+
 		shelfItems, err := gorm.G[ShelfItem](db).Raw("SELECT * FROM public.shelf_item_v1 WHERE deleted IS NOT TRUE AND id = ?", editShelfItem.Id).Find(context.Background())
 		if err != nil {
 			logger.Suger.Errorf("error in checking item: %s", err.Error())

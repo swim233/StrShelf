@@ -68,7 +68,7 @@ const props = defineProps(['icon'])
         ></path>
       </svg>
     </div>
-    <div v-if="icon === 'delete'">
+    <div v-if="icon === 'Delete'">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         xmlns:xlink="http://www.w3.org/1999/xlink"
