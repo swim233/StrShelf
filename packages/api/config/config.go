@@ -24,6 +24,5 @@ func InitConfig() {
 		logger.Suger.Errorf("can not load config: %s", err.Error())
 	} else {
 		logger.Suger.Infof("config load successful: %s", viper.ConfigFileUsed())
-		logger.Suger.Debugln(viper.AllKeys())
 	}
 }
