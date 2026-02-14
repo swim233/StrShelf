@@ -169,6 +169,7 @@ const postNewData = async () => {
         subMessage: '项目创建成功',
       })
       fetchData()
+      newData.value = getNullShelfItem()
     } else if (response.status == 401) {
       notify({
         type: 'Error',
@@ -296,6 +297,14 @@ const postIsActive = ref<boolean>(false)
 const loginIsActive = ref<boolean>(false)
 const editIsActive = ref<boolean>(false)
 const removeIsActive = ref<boolean>(false)
+const dialogIsActive = computed<boolean>((): boolean => {
+  return (
+    postIsActive.value ||
+    loginIsActive.value ||
+    editIsActive.value ||
+    removeIsActive.value
+  )
+})
 let timeout: ReturnType<typeof setTimeout> | null = null
 
 const post = () => {
@@ -315,14 +324,14 @@ const edit = (item: ShelfItem) => {
   editIsActive.value = true
 }
 
-const removeId = ref<number>(0)
+const removeItem = ref<ShelfItem>(getNullShelfItem())
 
-const remove = (id: number) => {
-  removeId.value = id
+const remove = (item: ShelfItem) => {
+  removeItem.value = structuredClone(toRaw(item))
   removeIsActive.value = true
 }
 
-const submitRemove = async () => {
+const postRemove = async () => {
   removeIsActive.value = false
   dialogDisplayDelay.value = false
 
@@ -333,15 +342,14 @@ const submitRemove = async () => {
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + Cookies.get('token'),
       },
-      body: JSON.stringify({ id: removeId.value }),
+      body: JSON.stringify({ id: removeItem.value.id }),
     })
 
-    let r = (await response.json()) as PostResult
-    if (r.result) {
+    if (response.ok) {
       notify({
         type: 'Success',
         delayTime: 3000,
-        mainMessage: '修改成功',
+        mainMessage: '删除成功',
       })
       fetchData()
     } else if (response.status == 401) {
@@ -357,7 +365,7 @@ const submitRemove = async () => {
         type: 'Error',
         delayTime: 5000,
         mainMessage: '修改失败',
-        subMessage: '项目修改失败 请检查网络',
+        subMessage: '项目删除失败 请检查网络',
       })
     }
   } catch (error) {
@@ -365,7 +373,7 @@ const submitRemove = async () => {
       type: 'Error',
       delayTime: 5000,
       mainMessage: '修改失败',
-      subMessage: '项目修改失败 请检查网络',
+      subMessage: '项目删除失败 请检查网络',
     })
   }
 }
@@ -407,6 +415,7 @@ const cancelDialog = () => {
   postIsActive.value = false
   loginIsActive.value = false
   editIsActive.value = false
+  removeIsActive.value = false
   dialogDisplayDelay.value = false
 
   if (timeout) {
@@ -492,11 +501,7 @@ const loginStatus = ref<boolean>(false)
 <template>
   <div class="root">
     <Transition name="masker">
-      <div
-        class="masker"
-        @click="cancelDialog"
-        v-if="postIsActive || loginIsActive || editIsActive"
-      ></div>
+      <div class="masker" @click="cancelDialog" v-if="dialogIsActive"></div>
     </Transition>
     <!-- <div class="debug-dialog">debug test</div> -->
     <div class="login-wrapper">
@@ -526,6 +531,7 @@ const loginStatus = ref<boolean>(false)
         </button>
       </div>
     </div>
+    <!-- 提交项目浮窗 -->
     <div class="post-dialog" v-if="loginStatus" :class="activeCss">
       <Transition name="post-dialog-transition">
         <div v-if="dialogDisplayDelay" class="post-dialog-wrapper">
@@ -565,6 +571,7 @@ const loginStatus = ref<boolean>(false)
         </div>
       </Transition>
     </div>
+    <!-- 修改项目浮窗 -->
     <div class="edit-dialog" v-if="editIsActive">
       <div v-if="editIsActive" class="edit-dialog-wrapper">
         <div class="edit-dialog-banner">编辑项目</div>
@@ -598,6 +605,44 @@ const loginStatus = ref<boolean>(false)
         <div class="edit-dialog-button-wrapper">
           <button class="edit-dialog-button" @click="postEditedData()">
             提交
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- 删除项目浮窗 -->
+    <div class="remove-dialog" v-if="removeIsActive">
+      <div v-if="removeIsActive" class="remove-dialog-wrapper">
+        <div class="remove-dialog-banner">删除项目</div>
+        <div class="remove-dialog-content">
+          <span class="remove-dialog-content-name-wrapper">
+            标题
+            <input
+              class="remove-dialog-content-input remove-dialog-title-input"
+              placeholder=""
+              v-model="removeItem.title"
+            />
+            <br />
+          </span>
+          <span class="remove-dialog-content-link-wrapper">
+            链接
+            <input
+              class="remove-dialog-content-input remove-dialog-link-input"
+              v-model="removeItem.link"
+            />
+            <br />
+          </span>
+          <span class="remove-dialog-content-comment-wrapper"
+            >评论
+            <input
+              placeholder=""
+              class="remove-dialog-content-input"
+              v-model="removeItem.comment"
+            />
+          </span>
+        </div>
+        <div class="remove-dialog-button-wrapper">
+          <button class="remove-dialog-button" @click="postRemove()">
+            删除
           </button>
         </div>
       </div>
@@ -637,7 +682,9 @@ const loginStatus = ref<boolean>(false)
                 </button>
               </div>
               <div class="delete">
-                <Icons class="delete-icon" :icon="'Delete'" />
+                <button @click="remove(data)">
+                  <Icons class="delete-icon" :icon="'Delete'" />
+                </button>
               </div>
               <div>
                 <div class="content-inner-title">{{ data.title }}</div>
@@ -1167,6 +1214,97 @@ const loginStatus = ref<boolean>(false)
   background-color: #516a89;
 }
 
+/* remove */
+
+.remove-dialog {
+  color: white;
+  display: flex;
+  position: fixed;
+  border: 5px solid var(--color-button-border);
+  border-radius: 8px;
+  background-color: #516a89;
+  bottom: 10px;
+  right: 10px;
+  z-index: 4;
+  transition: all 0.3s;
+  transform-origin: bottom right;
+}
+
+.remove-dialog {
+  display: flex;
+  width: 70vw;
+  height: 60vh;
+  transform: translate(-20%, -20%);
+  opacity: 1;
+  color: #14181d;
+  background-color: #14181d;
+}
+
+.remove-dialog-wrapper {
+  color: #ced4d9;
+  width: 100%;
+  height: 100%;
+  font-size: large;
+  font-weight: bold;
+}
+
+.remove-dialog-banner {
+  font-size: 30px;
+  display: flex;
+  justify-content: center;
+  font-weight: bold;
+  margin: 20px 20px;
+}
+
+.remove-dialog-content * {
+  margin: 20px 0 0 20px;
+  font-weight: 800;
+  font-size: 24px;
+}
+.remove-dialog-content-input {
+  color: var(--color);
+  position: relative;
+  padding: 12px;
+  border: 3px solid var(--color);
+  border-radius: 6px;
+  outline: none;
+  transition: box-shadow 0.4s 0.1s;
+  font-size: large;
+  font-weight: bold;
+}
+
+.remove-dialog-title-input:required:invalid,
+.remove-dialog-link-input:required:invalid {
+  border-color: var(--color-red-border);
+}
+.remove-dialog-content-input::placeholder {
+  color: var(--color);
+}
+
+.remove-dialog-button-wrapper {
+  position: absolute;
+  height: 60px;
+  width: 90px;
+  bottom: 30px;
+  right: 30px;
+  border: 4px solid rgb(22, 30, 62);
+  border-radius: 8px;
+}
+.remove-dialog-button {
+  border: 1px solid rgb(22, 30, 62);
+  border-radius: 8px;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: 800;
+  font-size: 24px;
+  background-color: #516a89;
+}
+
+/* notify */
 .notice-dialog-wrapper {
   z-index: 3;
   box-sizing: content-box;
