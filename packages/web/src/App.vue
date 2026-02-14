@@ -754,6 +754,7 @@ const loginStatus = ref<boolean>(false)
   --color-blue-bg: rgb(19, 28, 73);
   --color-font-disable: rgba(255, 255, 255, 0.6);
   --color-font-error: rgb(248, 0, 0);
+  --color-font-selected: #4c97ff;
   background-color: var(--background-color);
   color: var(--color);
 }
@@ -931,7 +932,7 @@ const loginStatus = ref<boolean>(false)
   font-size: 16px;
   transition: all 0.5s;
   transition-delay: 0.1s;
-  color: var(--color);
+  color: var(--color-font-selected);
 }
 .content-inner-link:hover {
   text-shadow: 0 0 24px var(--animation-color);
