@@ -1,4 +1,5 @@
 {
+  "listen": "localhost",
   "port": "1111",
   "secret_key": "YOUR_JWT_SECRET_KEY",
   "dsn": "host=localhost user=postgres dbname=strshelf port=5432 sslmode=disable TimeZone=Asia/Shanghai",

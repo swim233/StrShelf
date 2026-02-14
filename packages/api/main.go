@@ -109,7 +109,6 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
-
 	r.POST("/v1/item.get", func(ctx *gin.Context) {
 		shelfItems, err := gorm.G[ShelfItem](db).Raw("SELECT * FROM public.shelf_item_v1 WHERE deleted IS NOT TRUE ORDER BY id DESC").Find(context.Background())
 		if err != nil {
@@ -312,7 +311,12 @@ func main() {
 	if port == "" {
 		logger.Suger.Warnln("can not read port in config,using default port :1111")
 	}
-	err = r.Run(":" + port)
+	listen := viper.GetString("listen")
+	if listen == "" {
+		logger.Suger.Warnln("can not read address in config,listening 0.0.0.0")
+		listen = "0.0.0.0"
+	}
+	err = r.Run(listen + ":" + port)
 	if err != nil {
 		logger.Suger.Panicf("fail to start http service: %s", err.Error())
 	}
