@@ -511,20 +511,25 @@ const loginStatus = ref<boolean>(false)
     </div>
     <div class="login-dialog" :class="loginActiveCss">
       <div class="login-dialog-banner">登陆账号</div>
-      <div class="login-dialog-username">
-        <input
-          class="login-dialog-username-input login-dialog-input"
-          placeholder="账号"
-          v-model="userInfo.username"
-        />
+      <div>
+        <div class="login-dialog-username">
+          <input
+            type="text"
+            class="login-dialog-username-input login-dialog-input"
+            placeholder="账号"
+            v-model="userInfo.username"
+          />
+        </div>
+        <div class="login-dialog-password">
+          <input
+            type="password"
+            class="login-dialog-password-input login-dialog-input"
+            placeholder="密码"
+            v-model="userInfo.password"
+          />
+        </div>
       </div>
-      <div class="login-dialog-password">
-        <input
-          class="login-dialog-password-input login-dialog-input"
-          placeholder="密码"
-          v-model="userInfo.password"
-        />
-      </div>
+
       <div class="login-dialog-submit">
         <button class="login-dialog-submit-button" @click="loginSubmit()">
           登陆
@@ -1007,11 +1012,6 @@ const loginStatus = ref<boolean>(false)
 .masker-leave-to {
   opacity: 0 !important;
 }
-/*
-.masker-enter-to,
-.masker-leave-from {
-  opacity: 0.8;
-} */
 
 .masker {
   transition: all 0.3s;
