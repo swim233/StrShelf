@@ -1,12 +1,14 @@
 VERSION=$(shell git describe --tags --always --dirty)
-GIT_COMMIT=$(shell git rev-parse HEAD)
+GIT_COMMIT=$(shell git rev-parse HEAD | cut -c1-7)
 BUILD_TIME=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
 GO_VERSION=$(shell go version | awk '{print $$3}')
+COMMIT_MESSAGE=$(shell git log -1 --pretty=%s)
 define _LDFLAGS
 -ldflags "-X gopkg.ilharper.com/strshelf/api/utils.Version=$(VERSION) \
 -X gopkg.ilharper.com/strshelf/api/utils.GitCommit=$(GIT_COMMIT) \
 -X gopkg.ilharper.com/strshelf/api/utils.BuildTime=$(BUILD_TIME) \
 -X gopkg.ilharper.com/strshelf/api/utils.GoVersion=$(GO_VERSION) \
+-X 'gopkg.ilharper.com/strshelf/api/utils.CommitMessage=$(COMMIT_MESSAGE)' \
 -X gopkg.ilharper.com/strshelf/api/config.DebugModeStr=$1"
 endef
 
