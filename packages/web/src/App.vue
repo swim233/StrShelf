@@ -747,6 +747,8 @@ const loginStatus = ref<boolean>(false)
   --color-red-bg: #240401;
   --color-blue-border: rgb(32, 48, 114);
   --color-blue-bg: rgb(19, 28, 73);
+  --color-font-disable: rgba(255, 255, 255, 0.6);
+  --color-font-error: rgb(248, 0, 0);
   background-color: var(--background-color);
   color: var(--color);
 }
@@ -1262,7 +1264,7 @@ const loginStatus = ref<boolean>(false)
   font-size: 24px;
 }
 .remove-dialog-content-input {
-  color: var(--color);
+  color: var(--color-font-disable);
   position: relative;
   padding: 12px;
   border: 3px solid var(--color);
@@ -1271,8 +1273,9 @@ const loginStatus = ref<boolean>(false)
   transition: box-shadow 0.4s 0.1s;
   font-size: large;
   font-weight: bold;
+  pointer-events: none;
+  opacity: 0.6;
 }
-
 .remove-dialog-title-input:required:invalid,
 .remove-dialog-link-input:required:invalid {
   border-color: var(--color-red-border);
@@ -1287,21 +1290,21 @@ const loginStatus = ref<boolean>(false)
   width: 90px;
   bottom: 30px;
   right: 30px;
-  border: 4px solid rgb(22, 30, 62);
+  border: 4px solid var(--color-red-border);
   border-radius: 8px;
 }
 .remove-dialog-button {
-  border: 1px solid rgb(22, 30, 62);
+  border: 1px solid var(--color-red-bg);
   border-radius: 8px;
   display: flex;
   height: 100%;
   width: 100%;
   justify-content: center;
   align-items: center;
-  color: white;
+  color: var(--color-font-error);
   font-weight: 800;
   font-size: 24px;
-  background-color: #516a89;
+  background-color: var(--color-red-bg);
 }
 
 /* notify */
