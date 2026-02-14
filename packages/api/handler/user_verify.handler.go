@@ -25,6 +25,7 @@ func UserVerifyHandler(r *gin.Engine) {
 
 			switch result {
 			case true:
+				logger.Suger.Infof("verify successful: %s", tokenReq.Token)
 				ctx.JSON(200, gin.H{"msg": "successful"})
 			case false:
 				logger.Suger.Warnf("user post a error token: %s", tokenReq.Token)

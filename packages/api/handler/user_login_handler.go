@@ -36,8 +36,10 @@ func UserLoginHandler(r *gin.Engine) {
 			} else {
 				token := token.CreateJWT(user.Username)
 				ctx.JSON(200, gin.H{"token": token})
+				logger.Suger.Infof("user login successful,username: %s", matchUser.Username)
 			}
 		} else {
+			logger.Suger.Warnf("not exist user login: %s", user.Username)
 			ctx.JSON(401, gin.H{"msg": "user is not exist"})
 			return
 		}
