@@ -754,7 +754,8 @@ const loginStatus = ref<boolean>(false)
   --color-blue-bg: rgb(19, 28, 73);
   --color-font-disable: rgba(255, 255, 255, 0.6);
   --color-font-error: rgb(248, 0, 0);
-  --color-font-selected: #4c97ff;
+  --color-font-link: #4c97ff;
+  --color-font-selected: #ffb44c;
   background-color: var(--background-color);
   color: var(--color);
 }
@@ -932,7 +933,7 @@ const loginStatus = ref<boolean>(false)
   font-size: 16px;
   transition: all 0.5s;
   transition-delay: 0.1s;
-  color: var(--color-font-selected);
+  color: var(--color-font-link);
 }
 .content-inner-link:hover {
   text-shadow: 0 0 24px var(--animation-color);
@@ -1462,6 +1463,6 @@ const loginStatus = ref<boolean>(false)
 }
 
 *::selection {
-  color: #4c97ff;
+  color: var(--color-font-selected);
 }
 </style>
