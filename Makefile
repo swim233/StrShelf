@@ -32,6 +32,7 @@ build_frontend:
 	cp -rv packages/web/dist/ packages/api/
 
 build_backend:
+	@echo -e "\e[1;34mbuilding backend service...\e[0m"
 	@echo "Building with DebugModeStr=false"
 	cd packages/api && \
 	mkdir -p ../../build/bin && \
