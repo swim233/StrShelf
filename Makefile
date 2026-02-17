@@ -9,7 +9,7 @@ define _LDFLAGS
 -X gopkg.ilharper.com/strshelf/api/utils.BuildTime=$(BUILD_TIME) \
 -X gopkg.ilharper.com/strshelf/api/utils.GoVersion=$(GO_VERSION) \
 -X 'gopkg.ilharper.com/strshelf/api/utils.CommitMessage=$(COMMIT_MESSAGE)' \
--X gopkg.ilharper.com/strshelf/api/config.DebugModeStr=$1"
+-X gopkg.ilharper.com/strshelf/api/utils.DebugModeStr=$1"
 endef
 
 .PHONY: install build
@@ -43,8 +43,7 @@ run: run_backend run_frontend
 run_backend:
 	@echo "Running with DebugModeStr=true"
 	cd packages/api && \
-	go run $(call _LDFLAGS,true) main.go
-
+	go run $(call _LDFLAGS,true) -v main.go
 run_frontend:
 	cd packages/web && \
 	npm run dev -- --host
