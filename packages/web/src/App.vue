@@ -756,6 +756,7 @@ const loginStatus = ref<boolean>(false)
   --color-font-error: rgb(248, 0, 0);
   --color-font-link: #4c97ff;
   --color-font-selected: #ffb44c;
+  --color-font-comment: #ffffff;
   background-color: var(--background-color);
   color: var(--color);
 }
@@ -923,6 +924,7 @@ const loginStatus = ref<boolean>(false)
   font-size: 16px;
   transition: all 0.5s;
   transition-delay: 0.1s;
+  color: var(--color-font-comment);
 }
 .content-inner-comment:hover {
   text-shadow: 0 0 24px var(--animation-color);
