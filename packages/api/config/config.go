@@ -7,10 +7,6 @@ import (
 
 var ViperInstance *viper.Viper
 
-var DebugModeStr = "true"
-
-var DebugMode = DebugModeStr == "true"
-
 func InitConfig() {
 	viper.AddConfigPath("packages/api/config/")
 	viper.AddConfigPath("./config/")

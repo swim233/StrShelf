@@ -81,8 +81,7 @@ func main() {
 	config.InitConfig()
 	db.InitPostgresDB()
 	logger.Suger.Infoln(utils.GetVersion())
-
-	if !config.DebugMode {
+	if !utils.DebugMode {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	r := gin.Default()

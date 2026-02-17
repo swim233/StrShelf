@@ -10,6 +10,8 @@ var (
 	GitCommit     = "unknown"
 	CommitMessage = "unknown"
 	BuildTime     = "unknown"
+	DebugModeStr  = "true"
+	DebugMode     = DebugModeStr == "true"
 )
 
 func GetVersion() string {
