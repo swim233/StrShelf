@@ -1,13 +1,15 @@
 VERSION=$(shell git describe --tags --always --dirty)
-GIT_COMMIT=$(shell git rev-parse HEAD)
+GIT_COMMIT=$(shell git rev-parse HEAD | cut -c1-7)
 BUILD_TIME=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
 GO_VERSION=$(shell go version | awk '{print $$3}')
+COMMIT_MESSAGE=$(shell git log -1 --pretty=%s)
 define _LDFLAGS
 -ldflags "-X gopkg.ilharper.com/strshelf/api/utils.Version=$(VERSION) \
 -X gopkg.ilharper.com/strshelf/api/utils.GitCommit=$(GIT_COMMIT) \
 -X gopkg.ilharper.com/strshelf/api/utils.BuildTime=$(BUILD_TIME) \
 -X gopkg.ilharper.com/strshelf/api/utils.GoVersion=$(GO_VERSION) \
--X gopkg.ilharper.com/strshelf/api/config.DebugModeStr=$1"
+-X 'gopkg.ilharper.com/strshelf/api/utils.CommitMessage=$(COMMIT_MESSAGE)' \
+-X gopkg.ilharper.com/strshelf/api/utils.DebugModeStr=$1"
 endef
 
 .PHONY: install build
@@ -30,6 +32,7 @@ build_frontend:
 	cp -rv packages/web/dist/ packages/api/
 
 build_backend:
+	@echo -e "\e[1;34mbuilding backend service...\e[0m"
 	@echo "Building with DebugModeStr=false"
 	cd packages/api && \
 	mkdir -p ../../build/bin && \
@@ -40,8 +43,7 @@ run: run_backend run_frontend
 run_backend:
 	@echo "Running with DebugModeStr=true"
 	cd packages/api && \
-	go run $(call _LDFLAGS,true) main.go
-
+	go run $(call _LDFLAGS,true) -v main.go
 run_frontend:
 	cd packages/web && \
 	npm run dev -- --host

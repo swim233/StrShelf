@@ -511,20 +511,25 @@ const loginStatus = ref<boolean>(false)
     </div>
     <div class="login-dialog" :class="loginActiveCss">
       <div class="login-dialog-banner">登陆账号</div>
-      <div class="login-dialog-username">
-        <input
-          class="login-dialog-username-input login-dialog-input"
-          placeholder="账号"
-          v-model="userInfo.username"
-        />
+      <div>
+        <div class="login-dialog-username">
+          <input
+            type="text"
+            class="login-dialog-username-input login-dialog-input"
+            placeholder="账号"
+            v-model="userInfo.username"
+          />
+        </div>
+        <div class="login-dialog-password">
+          <input
+            type="password"
+            class="login-dialog-password-input login-dialog-input"
+            placeholder="密码"
+            v-model="userInfo.password"
+          />
+        </div>
       </div>
-      <div class="login-dialog-password">
-        <input
-          class="login-dialog-password-input login-dialog-input"
-          placeholder="密码"
-          v-model="userInfo.password"
-        />
-      </div>
+
       <div class="login-dialog-submit">
         <button class="login-dialog-submit-button" @click="loginSubmit()">
           登陆
@@ -749,6 +754,9 @@ const loginStatus = ref<boolean>(false)
   --color-blue-bg: rgb(19, 28, 73);
   --color-font-disable: rgba(255, 255, 255, 0.6);
   --color-font-error: rgb(248, 0, 0);
+  --color-font-link: #4c97ff;
+  --color-font-selected: #ffb44c;
+  --color-font-comment: #ffffff;
   background-color: var(--background-color);
   color: var(--color);
 }
@@ -916,6 +924,7 @@ const loginStatus = ref<boolean>(false)
   font-size: 16px;
   transition: all 0.5s;
   transition-delay: 0.1s;
+  color: var(--color-font-comment);
 }
 .content-inner-comment:hover {
   text-shadow: 0 0 24px var(--animation-color);
@@ -926,7 +935,7 @@ const loginStatus = ref<boolean>(false)
   font-size: 16px;
   transition: all 0.5s;
   transition-delay: 0.1s;
-  color: var(--color);
+  color: var(--color-font-link);
 }
 .content-inner-link:hover {
   text-shadow: 0 0 24px var(--animation-color);
@@ -1007,11 +1016,6 @@ const loginStatus = ref<boolean>(false)
 .masker-leave-to {
   opacity: 0 !important;
 }
-/*
-.masker-enter-to,
-.masker-leave-from {
-  opacity: 0.8;
-} */
 
 .masker {
   transition: all 0.3s;
@@ -1461,6 +1465,6 @@ const loginStatus = ref<boolean>(false)
 }
 
 *::selection {
-  color: #4c97ff;
+  color: var(--color-font-selected);
 }
 </style>

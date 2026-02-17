@@ -7,14 +7,11 @@ import (
 	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"gopkg.ilharper.com/strshelf/api/utils"
 )
 
 var Logger *zap.Logger
 var Suger *zap.SugaredLogger
-
-type Config struct {
-	WriteBoth string
-}
 
 type ZapConfig struct {
 	Prefix     string         `yaml:"prefix" mapstructure:"prefix"`
@@ -38,7 +35,7 @@ type LogFileConfig struct {
 func InitLogger() {
 	config := &ZapConfig{
 		Prefix:     "ZapLogTest",
-		TimeFormat: "2006/01/02 - 15:04:05.00000",
+		TimeFormat: "2006/01/02 - 15:04:05",
 		Level:      "debug",
 		Caller:     true,
 		StackTrace: false,
@@ -55,7 +52,13 @@ func InitLogger() {
 	// 构建编码器
 	encoder := zapEncoder(config)
 	// 构建日志级别
-	levelEnabler := zap.DebugLevel
+	levelEnabler := func() zapcore.Level {
+		if utils.DebugMode {
+			return zapcore.DebugLevel
+		} else {
+			return zapcore.InfoLevel
+		}
+	}()
 	// 最后获得Core和Options
 	subCore, options := tee(config, encoder, levelEnabler)
 	// 创建Logger
@@ -121,7 +124,7 @@ func buildOptions(cfg *ZapConfig, levelEnabler zapcore.LevelEnabler) (options []
 
 // CustomTimeFormatEncoder formats the time for zap logs using the config's TimeFormat.
 func CustomTimeFormatEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-	enc.AppendString(t.Format("2006/01/02 - 15:04:05.00000"))
+	enc.AppendString("[Zap]" + " " + t.Format("2006/01/02 - 15:04:05"))
 }
 
 func zapWriteSyncer(cfg *ZapConfig) zapcore.WriteSyncer {
