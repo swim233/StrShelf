@@ -11,7 +11,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// TODO:对空username和密码判空
 func UserSignUpHandler(r *gin.Engine) {
 	r.POST("/v1/user.signup", func(ctx *gin.Context) {
 		logger.Suger.Debugf("current allow signup status:%v", viper.GetBool("allow_signup"))
@@ -25,6 +24,9 @@ func UserSignUpHandler(r *gin.Engine) {
 		if err != nil {
 			ctx.JSON(500, gin.H{"msg": "internal error"})
 			return
+		}
+		if newUser.Username == "" || newUser.Password == "" {
+			ctx.JSON(200, gin.H{"code": "400", "msg": "username and password not allow empty"})
 		}
 		users, err := gorm.G[UserInfo](db.DB).Raw("SELECT * FROM public.shelf_user_v1 WHERE username = ?", newUser.Username).Find(context.Background())
 		if err != nil {

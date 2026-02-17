@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// TODO:增加更多数据库驱动
 func InitPostgresDB() {
 	dsn := func() string {
 		if dsn := viper.GetString("dsn"); dsn != "" {
