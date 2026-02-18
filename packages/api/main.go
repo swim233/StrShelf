@@ -79,7 +79,7 @@ func (ct *CustomTime) UnmarshalJSON(data []byte) error {
 func main() {
 	logger.InitLogger()
 	config.InitConfig()
-	db.InitPostgresDB()
+	DB := db.InitDB()
 	logger.Suger.Infoln(utils.GetVersion())
 	if !utils.DebugMode {
 		gin.SetMode(gin.ReleaseMode)
@@ -93,12 +93,12 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
-	handler.ItemGetHandler(r)
-	handler.ItemPostHandler(r)
-	handler.ItemEditHandler(r)
-	handler.ItemDeleteHandler(r)
-	handler.UserSignUpHandler(r)
-	handler.UserLoginHandler(r)
+	handler.ItemGetHandler(r, DB)
+	handler.ItemPostHandler(r, DB)
+	handler.ItemEditHandler(r, DB)
+	handler.ItemDeleteHandler(r, DB)
+	handler.UserSignUpHandler(r, DB)
+	handler.UserLoginHandler(r, DB)
 	handler.UserVerifyHandler(r)
 
 	dist, err := static.EmbedFolder(app, "dist")

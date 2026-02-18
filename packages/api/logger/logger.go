@@ -13,6 +13,7 @@ import (
 var Logger *zap.Logger
 var Suger *zap.SugaredLogger
 
+// TODO:重构logger
 type ZapConfig struct {
 	Prefix     string         `yaml:"prefix" mapstructure:"prefix"`
 	TimeFormat string         `yaml:"timeFormat" mapstructure:"timeFormat"`
