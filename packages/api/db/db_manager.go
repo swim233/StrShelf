@@ -18,11 +18,8 @@ type DBInstance interface {
 
 var DB *gorm.DB
 
-var ActivatedDB string
-
 func InitDB() DBInstance {
 	dbType := viper.GetString("db_type")
-	dbType = "postgres"
 	switch dbType {
 	case "postgres":
 		{
@@ -31,7 +28,9 @@ func InitDB() DBInstance {
 		}
 	case "sqlite":
 		{
-			InitSqliteDB()
+			sqlite := InitSqliteDB()
+			return sqlite
+
 		}
 
 	}
