@@ -1,0 +1,91 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: ${{ matrix.target.goos }}-${{ matrix.target.goarch }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        target:
+          - goos: darwin
+            goarch: amd64
+            os: macos-26
+          - goos: darwin
+            goarch: arm64
+            os: macos-26
+          - goos: linux
+            goarch: '386'
+            os: ubuntu-24.04
+          - goos: linux
+            goarch: amd64
+            os: ubuntu-24.04
+          - goos: linux
+            goarch: arm
+            os: ubuntu-24.04
+          - goos: linux
+            goarch: arm64
+            os: ubuntu-24.04
+          - goos: linux
+            goarch: ppc64le
+            os: ubuntu-24.04
+          - goos: linux
+            goarch: riscv64
+            os: ubuntu-24.04
+          - goos: linux
+            goarch: s390x
+            os: ubuntu-24.04
+          - goos: windows
+            goarch: amd64
+            os: windows-2025
+          - goos: windows
+            goarch: arm64
+            os: windows-2025
+
+    runs-on: ${{ matrix.target.os }}
+
+    env:
+      GOOS: ${{ matrix.target.goos }}
+      GOARCH: ${{ matrix.target.goarch }}
+      CGO_ENABLED: '0'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.26'
+          cache-dependency-path: packages/api/go.sum
+
+      - name: Build
+        run: make build
+        shell: bash
+
+      - name: Move artifacts to dist folder
+        run: |
+          mkdir dist
+          mv build/bin/strshelf dist/ || true
+          mv build/bin/strshelf.exe dist/ || true
+          mv config/* dist/
+        shell: bash
+
+      - name: Upload files
+        uses: actions/upload-artifact@v6
+        with:
+          name: strshelf-${{ matrix.target.goos }}-${{ matrix.target.goarch }}-${{ github.sha }}.zip
+          path: dist
+          compression-level: 9
