@@ -1,27 +1,17 @@
 package utils
 
 import (
-	"fmt"
 	"runtime"
+
+	"gopkg.ilharper.com/strshelf/api/lib"
+	"gopkg.ilharper.com/strshelf/api/logger"
 )
 
-var (
-	Version       = "dev"
-	GitCommit     = "unknown"
-	CommitMessage = "unknown"
-	BuildTime     = "unknown"
-	DebugModeStr  = "true"
-	DebugMode     = DebugModeStr == "true"
-)
-
-// TODO:优化信息展示
-func GetVersion() string {
-	return fmt.Sprintf(
-		"Running info:\nVersion: %s\nCommit: %s\nLast Commit: %s\nBuild Time: %s\nGo Version: %s",
-		Version,
-		GitCommit,
-		CommitMessage,
-		BuildTime,
-		runtime.Version(),
-	)
+func DisplayVersion() {
+	logger.Suger.Infof("List running info")
+	logger.Suger.Infof("Version: %s", lib.Version)
+	logger.Suger.Infof("Commit: %s", lib.GitCommit)
+	logger.Suger.Infof("Last Commit: %s", lib.CommitMessage)
+	logger.Suger.Infof("Build Time: %s", lib.BuildTime)
+	logger.Suger.Infof("Go Version: %s", runtime.Version())
 }

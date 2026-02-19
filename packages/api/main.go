@@ -15,6 +15,7 @@ import (
 	"gopkg.ilharper.com/strshelf/api/config"
 	"gopkg.ilharper.com/strshelf/api/db"
 	"gopkg.ilharper.com/strshelf/api/handler"
+	"gopkg.ilharper.com/strshelf/api/lib"
 	"gopkg.ilharper.com/strshelf/api/logger"
 	"gopkg.ilharper.com/strshelf/api/utils"
 )
@@ -80,8 +81,8 @@ func main() {
 	logger.InitLogger()
 	config.InitConfig()
 	DB := db.InitDB()
-	logger.Suger.Infoln(utils.GetVersion())
-	if !utils.DebugMode {
+	utils.DisplayVersion()
+	if !lib.DebugMode {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	r := gin.Default()

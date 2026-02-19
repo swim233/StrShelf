@@ -7,7 +7,7 @@ import (
 	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"gopkg.ilharper.com/strshelf/api/utils"
+	"gopkg.ilharper.com/strshelf/api/lib"
 )
 
 var Logger *zap.Logger
@@ -54,7 +54,7 @@ func InitLogger() {
 	encoder := zapEncoder(config)
 	// 构建日志级别
 	levelEnabler := func() zapcore.Level {
-		if utils.DebugMode {
+		if lib.DebugMode {
 			return zapcore.DebugLevel
 		} else {
 			return zapcore.InfoLevel
