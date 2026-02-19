@@ -1,26 +1,24 @@
 package handler
 
 import (
-	"context"
-
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.ilharper.com/strshelf/api/db"
+	"gopkg.ilharper.com/strshelf/api/lib"
 	"gopkg.ilharper.com/strshelf/api/logger"
 	"gopkg.ilharper.com/strshelf/api/token"
-	"gorm.io/gorm"
 )
 
-func UserLoginHandler(r *gin.Engine) {
+func UserLoginHandler(r *gin.Engine, DB db.DBInstance) {
 	r.POST("/v1/user.login", func(ctx *gin.Context) {
-		user := UserInfo{}
+		user := lib.UserInfo{}
 		err := ctx.BindJSON(&user)
 		if err != nil {
 			ctx.JSON(500, gin.H{"msg": "internal error"})
 			return
 		}
 
-		matchUsers, err := gorm.G[UserInfo](db.DB).Raw("SELECT * FROM public.shelf_user_v1 WHERE username = ?", user.Username).Find(context.Background())
+		matchUsers, err := DB.GetMatchUser(user.Username)
 		if err != nil {
 			ctx.JSON(500, gin.H{"msg": "error in insert database: " + err.Error()})
 			logger.Suger.Errorf("error in matching login user: %s", err.Error())

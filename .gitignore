@@ -230,3 +230,6 @@ config.json
 
 # Dist
 dist/
+
+# Sqlite DB File
+data.db

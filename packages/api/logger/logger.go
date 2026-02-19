@@ -13,6 +13,7 @@ import (
 var Logger *zap.Logger
 var Suger *zap.SugaredLogger
 
+// TODO:重构logger
 type ZapConfig struct {
 	Prefix     string         `yaml:"prefix" mapstructure:"prefix"`
 	TimeFormat string         `yaml:"timeFormat" mapstructure:"timeFormat"`
@@ -71,14 +72,15 @@ func InitLogger() {
 func zapEncoder(config *ZapConfig) zapcore.Encoder {
 
 	encoderConfig := zapcore.EncoderConfig{
-		TimeKey:       "Time",
-		LevelKey:      "Level",
-		NameKey:       "Logger",
-		CallerKey:     "Caller",
-		MessageKey:    "Message",
-		StacktraceKey: "StackTrace",
-		LineEnding:    zapcore.DefaultLineEnding,
-		FunctionKey:   zapcore.OmitKey,
+		TimeKey:          "Time",
+		LevelKey:         "Level",
+		NameKey:          "Logger",
+		CallerKey:        "Caller",
+		MessageKey:       "Message",
+		StacktraceKey:    "StackTrace",
+		LineEnding:       zapcore.DefaultLineEnding,
+		FunctionKey:      zapcore.OmitKey,
+		ConsoleSeparator: "  ",
 	}
 	// 自定义时间格式
 	encoderConfig.EncodeTime = CustomTimeFormatEncoder

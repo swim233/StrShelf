@@ -1,25 +1,24 @@
 package handler
 
 import (
-	"context"
-
 	"github.com/gin-gonic/gin"
 	"gopkg.ilharper.com/strshelf/api/db"
+	"gopkg.ilharper.com/strshelf/api/lib"
 	"gopkg.ilharper.com/strshelf/api/logger"
 	"gopkg.ilharper.com/strshelf/api/middleware"
-	"gorm.io/gorm"
 )
 
-func ItemDeleteHandler(r *gin.Engine) {
+func ItemDeleteHandler(r *gin.Engine, DB db.DBInstance) {
 	r.POST("/v1/item.delete", middleware.JWTAuthMiddleWare(), func(ctx *gin.Context) {
-		deleteItem := ShelfDeleteItem{}
+		deleteItem := lib.ShelfDeleteItem{}
 		err := ctx.BindJSON(&deleteItem)
 		if err != nil {
 			logger.Suger.Errorf("error when binding json: %s", err.Error())
 			ctx.JSON(400, gin.H{"msg": "internal error"})
 			return
 		}
-		shelfItems, err := gorm.G[ShelfItem](db.DB).Raw("SELECT * FROM public.shelf_item_v1 WHERE deleted IS NOT TRUE AND id = ?", deleteItem.Id).Find(context.Background())
+		shelfItems, err := DB.GetShelfItemByID(deleteItem.Id)
+
 		if err != nil {
 			logger.Suger.Errorf("error in checking item: %s", err.Error())
 			ctx.JSON(400, gin.H{"msg": "internal error"})
@@ -29,7 +28,7 @@ func ItemDeleteHandler(r *gin.Engine) {
 			ctx.JSON(200, gin.H{"msg": "origin item not found", "code": "404"})
 			return
 		}
-		err = gorm.G[any](db.DB).Exec(context.Background(), "UPDATE public.shelf_item_v1 SET deleted = true ,gmt_deleted = now() WHERE id = ?", deleteItem.Id)
+		err = DB.DeleteShelfItem(deleteItem.Id)
 
 		if err != nil {
 			logger.Suger.Errorf("error in updating database: %s", err.Error())
