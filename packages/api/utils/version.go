@@ -14,6 +14,7 @@ var (
 	DebugMode     = DebugModeStr == "true"
 )
 
+// TODO:优化信息展示
 func GetVersion() string {
 	return fmt.Sprintf(
 		"Running info:\nVersion: %s\nCommit: %s\nLast Commit: %s\nBuild Time: %s\nGo Version: %s",

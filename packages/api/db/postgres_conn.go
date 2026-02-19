@@ -16,7 +16,7 @@ type PostgresDB struct {
 
 func InitPostgresDB() *PostgresDB {
 	dsn := func() string {
-		if dsn := viper.GetString("dsn"); dsn != "" {
+		if dsn := viper.GetString("postgres_dsn"); dsn != "" {
 			return dsn
 		} else {
 			return "host=localhost user=postgres dbname=strshelf port=5432 sslmode=disable TimeZone=Asia/Shanghai"

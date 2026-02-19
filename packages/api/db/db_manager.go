@@ -3,6 +3,7 @@ package db
 import (
 	"github.com/spf13/viper"
 	"gopkg.ilharper.com/strshelf/api/lib"
+	"gopkg.ilharper.com/strshelf/api/logger"
 	"gorm.io/gorm"
 )
 
@@ -32,7 +33,10 @@ func InitDB() DBInstance {
 			return sqlite
 
 		}
-
+	default:
+		{
+			logger.Suger.Panicf("fail to get database type,please check config,current type: %s", dbType)
+		}
 	}
 	return nil
 }
