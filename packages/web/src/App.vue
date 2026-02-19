@@ -59,10 +59,22 @@ onMounted(async () => {
     mainMessage: '正在获取列表',
   })
   fetchData()
-  let result = await verifyJWT(Cookies.get('token'))
-  if (result) {
-    loginStatus.value = true
+  let cacheToken = Cookies.get('token')
+  if (cacheToken != '') {
+    let result = await verifyJWT(cacheToken)
+    if (result) {
+      loginStatus.value = true
+    } else {
+      loginStatus.value = false
+      notify({
+        type: 'Warning',
+        delayTime: 3000,
+        mainMessage: '登陆失效',
+        subMessage: '请重新登录',
+      })
+    }
   }
+
   loginDisplayText.value = computeDisplayText()
   console.log(devMode)
 })
@@ -488,7 +500,7 @@ const loginDisplayText = ref<string>('登陆')
 
 const computeDisplayText = (): string => {
   let username = Cookies.get('username')
-  if (username != null) {
+  if (username != null && loginStatus.value) {
     return username
   } else {
     return '登陆'
@@ -752,6 +764,8 @@ const loginStatus = ref<boolean>(false)
   --color-red-bg: #240401;
   --color-blue-border: rgb(32, 48, 114);
   --color-blue-bg: rgb(19, 28, 73);
+  --color-orange-border: #80330c;
+  --color-orange-bg: #482604;
   --color-font-disable: rgba(255, 255, 255, 0.6);
   --color-font-error: rgb(248, 0, 0);
   --color-font-link: #4c97ff;
@@ -1345,6 +1359,11 @@ const loginStatus = ref<boolean>(false)
   border: 5px solid var(--color-blue-border);
   border-radius: 8px;
   background-color: var(--color-blue-bg);
+}
+.notice-dialog-instance.Warning {
+  border: 5px solid var(--color-orange-border);
+  border-radius: 8px;
+  background-color: var(--color-orange-bg);
 }
 
 .notice-dialog-main {
