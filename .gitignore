@@ -233,3 +233,6 @@ dist/
 
 # Sqlite DB File
 data.db
+
+# yaml config
+config.yaml

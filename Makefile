@@ -44,6 +44,7 @@ run_backend:
 	@echo "Running with DebugModeStr=true"
 	cd packages/api && \
 	go run $(call _LDFLAGS,true) -v main.go
+
 run_frontend:
 	cd packages/web && \
 	npm run dev -- --host

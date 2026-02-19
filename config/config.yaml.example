@@ -1,0 +1,15 @@
+listen: 'localhost'
+
+port: 1111
+
+secret_key: 'YOUR_JWT_SECRET_KEY'
+
+# 可选值："postgres","sqlite"
+db_type: 'sqlite'
+
+postgres_dsn: 'host=localhost user=postgres dbname=strshelf port=5432 sslmode=disable TimeZone=Asia/Shanghai'
+
+sqlite_dsn: 'db/data.db'
+
+# 是否允许注册
+allow_signup: false

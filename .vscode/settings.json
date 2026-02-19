@@ -3,6 +3,7 @@
     "Datas",
     "dbname",
     "Debugln",
+    "fsnotify",
     "gonic",
     "gopkg",
     "gorm",
