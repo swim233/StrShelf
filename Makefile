@@ -9,7 +9,8 @@ define _LDFLAGS
 -X gopkg.ilharper.com/strshelf/api/lib.BuildTime=$(BUILD_TIME) \
 -X gopkg.ilharper.com/strshelf/api/lib.GoVersion=$(GO_VERSION) \
 -X 'gopkg.ilharper.com/strshelf/api/lib.CommitMessage=$(COMMIT_MESSAGE)' \
--X gopkg.ilharper.com/strshelf/api/lib.DebugModeStr=$1"
+-X gopkg.ilharper.com/strshelf/api/lib.DebugModeStr=$1 \
+-s -w"
 endef
 
 .PHONY: install build
