@@ -10,7 +10,7 @@ define _LDFLAGS
 -X gopkg.ilharper.com/strshelf/api/lib.GoVersion=$(GO_VERSION) \
 -X 'gopkg.ilharper.com/strshelf/api/lib.CommitMessage=$(COMMIT_MESSAGE)' \
 -X gopkg.ilharper.com/strshelf/api/lib.DebugModeStr=$1 \
--s -w"
+$2"
 endef
 
 .PHONY: install build
@@ -38,14 +38,14 @@ build_backend:
 	@echo "Building with DebugModeStr=false"
 	cd packages/api && \
 	mkdir -p ../../build/bin && \
-	go build $(call _LDFLAGS,false) -v -o ../../build/bin/strshelf
+	go build $(call _LDFLAGS,false,-s -w) -v -o ../../build/bin/strshelf
 
 run: run_backend run_frontend
 
 run_backend:
 	@echo "Running with DebugModeStr=true"
 	cd packages/api && \
-	go run $(call _LDFLAGS,true) -v main.go
+	go run $(call _LDFLAGS,true,) -v main.go
 
 run_frontend:
 	cd packages/web && \
