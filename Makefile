@@ -29,7 +29,8 @@ clean:
 build_frontend:
 	@echo -e "\e[1;34mpackaging frontend file...\e[0m"
 	npm run build -w strshelf-web && \
-	cp -rv packages/web/dist/ packages/api/
+	mkdir -p packages/api/dist/ && \
+	cp -rv packages/web/dist/* packages/api/dist/
 
 build_backend:
 	@echo -e "\e[1;34mbuilding backend service...\e[0m"
