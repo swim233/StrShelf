@@ -16,25 +16,25 @@ endef
 .PHONY: install build
 
 build: install clean build_frontend build_backend
-	@echo -e "\e[1;34mall target success complete!\e[0m"
+	@echo "\e[1;34mall target success complete!\e[0m"
 
 install:
-	@echo -e "\e[1;34minstalling npm module...\e[0m"
+	@echo "\e[1;34minstalling npm module...\e[0m"
 	npm install
 
 clean:
-	@echo -e "\e[1;34mcleaning dist files...\e[0m"
+	@echo "\e[1;34mcleaning dist files...\e[0m"
 	rm -rfv packages/web/dist
 	rm -rfv packages/api/dist
 
 build_frontend:
-	@echo -e "\e[1;34mpackaging frontend file...\e[0m"
+	@echo "\e[1;34mpackaging frontend file...\e[0m"
 	npm run build -w strshelf-web && \
 	mkdir -p packages/api/dist/ && \
 	cp -rv packages/web/dist/* packages/api/dist/
 
 build_backend:
-	@echo -e "\e[1;34mbuilding backend service...\e[0m"
+	@echo "\e[1;34mbuilding backend service...\e[0m"
 	@echo "Building with DebugModeStr=false"
 	cd packages/api && \
 	mkdir -p ../../build/bin && \
