@@ -2,6 +2,7 @@
   "cSpell.words": [
     "Datas",
     "dbname",
+    "Debugf",
     "Debugln",
     "fsnotify",
     "gonic",
@@ -16,5 +17,6 @@
     "strshelf",
     "Warnf",
     "Warnln"
-  ]
+  ],
+  "todo-tree.tree.showBadges": true
 }

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 	"gopkg.ilharper.com/strshelf/api/logger"
 )
@@ -22,5 +23,9 @@ func InitConfig() {
 		logger.Suger.Debugln(viper.AllKeys())
 	}
 	viper.WatchConfig()
-	//TODO:配置文件被修改时提醒
+	viper.OnConfigChange(func(in fsnotify.Event) {
+		logger.Suger.Infof("detaching config changed: %s", in.Name)
+		logger.Suger.Debugf("config file event operation: %s", in.Op)
+
+	})
 }
