@@ -21,6 +21,7 @@ var DB *gorm.DB
 
 func InitDB() ShelfDB {
 	dbType := viper.GetString("db_type")
+	logger.Suger.Infof("current selected db: %s", dbType)
 	switch dbType {
 	case "postgres":
 		{
