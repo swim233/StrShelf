@@ -72,6 +72,7 @@ onMounted(async () => {
         mainMessage: '登陆失效',
         subMessage: '请重新登录',
       })
+      Cookies.set('token', '')
     }
   }
 
