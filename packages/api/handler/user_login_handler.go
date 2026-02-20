@@ -9,7 +9,7 @@ import (
 	"gopkg.ilharper.com/strshelf/api/token"
 )
 
-func UserLoginHandler(r *gin.Engine, DB db.DBInstance) {
+func UserLoginHandler(r *gin.Engine, DB db.ShelfDB) {
 	r.POST("/v1/user.login", func(ctx *gin.Context) {
 		user := lib.UserInfo{}
 		err := ctx.BindJSON(&user)

@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func UserSignUpHandler(r *gin.Engine, DB db.DBInstance) {
+func UserSignUpHandler(r *gin.Engine, DB db.ShelfDB) {
 	r.POST("/v1/user.signup", func(ctx *gin.Context) {
 		logger.Suger.Debugf("current allow signup status:%v", viper.GetBool("allow_signup"))
 		if !viper.GetBool("allow_signup") {

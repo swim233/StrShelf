@@ -8,7 +8,7 @@ import (
 	"gopkg.ilharper.com/strshelf/api/middleware"
 )
 
-func ItemDeleteHandler(r *gin.Engine, DB db.DBInstance) {
+func ItemDeleteHandler(r *gin.Engine, DB db.ShelfDB) {
 	r.POST("/v1/item.delete", middleware.JWTAuthMiddleWare(), func(ctx *gin.Context) {
 		deleteItem := lib.ShelfDeleteItem{}
 		err := ctx.BindJSON(&deleteItem)

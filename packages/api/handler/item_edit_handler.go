@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func ItemEditHandler(r *gin.Engine, DB db.DBInstance) {
+func ItemEditHandler(r *gin.Engine, DB db.ShelfDB) {
 	r.POST("/v1/item.edit", middleware.JWTAuthMiddleWare(), func(ctx *gin.Context) {
 		editShelfItem := lib.ShelfEditItem{}
 		result := gorm.WithResult()

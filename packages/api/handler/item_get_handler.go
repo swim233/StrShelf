@@ -6,7 +6,7 @@ import (
 	"gopkg.ilharper.com/strshelf/api/lib"
 )
 
-func ItemGetHandler(r *gin.Engine, DB db.DBInstance) {
+func ItemGetHandler(r *gin.Engine, DB db.ShelfDB) {
 	r.POST("/v1/item.get", func(ctx *gin.Context) {
 		shelfItems, err := DB.GetShelfItem()
 		if err != nil {

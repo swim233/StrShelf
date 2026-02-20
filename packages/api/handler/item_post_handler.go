@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func ItemPostHandler(r *gin.Engine, DB db.DBInstance) {
+func ItemPostHandler(r *gin.Engine, DB db.ShelfDB) {
 
 	r.POST("/v1/item.post", middleware.JWTAuthMiddleWare(), func(ctx *gin.Context) {
 		newShelfItem := lib.ShelfItem{}

@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type DBInstance interface {
+type ShelfDB interface {
 	GetShelfItem() ([]lib.ShelfItem, error)
 	EditShelfItem(title string, link string, comment string, id uint64) error
 	PostShelfItem(item lib.ShelfItem) error
@@ -19,7 +19,7 @@ type DBInstance interface {
 
 var DB *gorm.DB
 
-func InitDB() DBInstance {
+func InitDB() ShelfDB {
 	dbType := viper.GetString("db_type")
 	switch dbType {
 	case "postgres":
