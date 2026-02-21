@@ -16,26 +16,26 @@ endef
 .PHONY: install build
 
 build: install clean build_frontend build_backend
-	@echo "\e[1;34mall target success complete!\e[0m"
+	@printf "\033[1;34mall target success complete!\033[0m\n"
 
 install:
-	@echo "\e[1;34minstalling npm module...\e[0m"
-	npm install
+	@printf "\033[1;34minstalling npm module...\033[0m\n"
+	pnpm install
 
 clean:
-	@echo "\e[1;34mcleaning dist files...\e[0m"
+	@printf "\033[1;34mcleaning dist files...\033[0m\n"
 	rm -rfv packages/web/dist
 	rm -rfv packages/api/dist
 
 build_frontend:
-	@echo "\e[1;34mpackaging frontend file...\e[0m"
+	@printf "\033[1;34mpackaging frontend file...\033[0m\n"
 	npm run build -w strshelf-web && \
 	mkdir -p packages/api/dist/ && \
 	cp -rv packages/web/dist/* packages/api/dist/
 
 build_backend:
-	@echo "\e[1;34mbuilding backend service...\e[0m"
-	@echo "Building with DebugModeStr=false"
+	@printf "\033[1;34mbuilding backend service...\033[0m\n"
+	@printf "Building with DebugModeStr=false\n"
 	cd packages/api && \
 	mkdir -p ../../build/bin && \
 	go build $(call _LDFLAGS,false,-s -w) -v -o ../../build/bin/strshelf
