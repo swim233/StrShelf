@@ -26,6 +26,7 @@ func UserSignUpHandler(r *gin.Engine, DB db.ShelfDB) {
 		}
 		if newUser.Username == "" || newUser.Password == "" {
 			ctx.JSON(200, gin.H{"code": "400", "msg": "username and password not allow empty"})
+			return
 		}
 		users, err := DB.GetMatchUser(newUser.Username)
 		if err != nil {
