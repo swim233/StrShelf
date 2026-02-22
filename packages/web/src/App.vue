@@ -69,7 +69,7 @@ onMounted(async () => {
       notify({
         type: 'Warning',
         delayTime: 3000,
-        mainMessage: '登陆失效',
+        mainMessage: '登录失效',
         subMessage: '请重新登录',
       })
       Cookies.set('token', '')
@@ -188,7 +188,7 @@ const postNewData = async () => {
         type: 'Error',
         delayTime: 3000,
         mainMessage: '身份验证失败',
-        subMessage: '请重新登陆',
+        subMessage: '请重新登录',
       })
       loginStatus.value = false
     } else {
@@ -262,7 +262,7 @@ const postEditedData = async () => {
         type: 'Error',
         delayTime: 3000,
         mainMessage: '身份验证失败',
-        subMessage: '请重新登陆',
+        subMessage: '请重新登录',
       })
       loginStatus.value = false
     } else {
@@ -370,7 +370,7 @@ const postRemove = async () => {
         type: 'Error',
         delayTime: 3000,
         mainMessage: '身份验证失败',
-        subMessage: '请重新登陆',
+        subMessage: '请重新登录',
       })
       loginStatus.value = false
     } else {
@@ -407,7 +407,7 @@ const loginSubmit = async () => {
     notify({
       type: 'Success',
       delayTime: 3000,
-      mainMessage: '登陆成功',
+      mainMessage: '登录成功',
     })
     loginStatus.value = true
     loginDisplayText.value = userInfo.value.username
@@ -415,7 +415,7 @@ const loginSubmit = async () => {
     notify({
       type: 'Error',
       delayTime: 3000,
-      mainMessage: '登陆失败',
+      mainMessage: '登录失败',
       subMessage: '请检查用户名和密码',
     })
   }
@@ -497,14 +497,14 @@ const verifyJWT = async (token: string | undefined): Promise<boolean> => {
   }
   return false
 }
-const loginDisplayText = ref<string>('登陆')
+const loginDisplayText = ref<string>('登录')
 
 const computeDisplayText = (): string => {
   let username = Cookies.get('username')
   if (username != null && loginStatus.value) {
     return username
   } else {
-    return '登陆'
+    return '登录'
   }
 }
 
@@ -523,7 +523,7 @@ const loginStatus = ref<boolean>(false)
       </button>
     </div>
     <div class="login-dialog" :class="loginActiveCss">
-      <div class="login-dialog-banner">登陆账号</div>
+      <div class="login-dialog-banner">登录账号</div>
       <div>
         <div class="login-dialog-username">
           <input
@@ -545,7 +545,7 @@ const loginStatus = ref<boolean>(false)
 
       <div class="login-dialog-submit">
         <button class="login-dialog-submit-button" @click="loginSubmit()">
-          登陆
+          登录
         </button>
       </div>
     </div>
