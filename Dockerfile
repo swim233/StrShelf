@@ -5,6 +5,9 @@ FROM node:24.13.0-trixie AS fe
 WORKDIR /app
 COPY . /app
 
+RUN corepack enable
+RUN corepack prepare --activate
+
 RUN apt-get update && apt-get install -y \
     make \
     && rm -rf /var/lib/apt/lists/*
