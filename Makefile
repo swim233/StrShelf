@@ -29,7 +29,7 @@ clean:
 
 build_frontend:
 	@printf "\033[1;34mpackaging frontend file...\033[0m\n"
-	npm run build -w strshelf-web && \
+	pnpm -C "packages/web" run build && \
 	mkdir -p packages/api/dist/ && \
 	cp -rv packages/web/dist/* packages/api/dist/
 
@@ -49,4 +49,4 @@ run_backend:
 
 run_frontend:
 	cd packages/web && \
-	npm run dev -- --host
+	pnpm -C "packages/web" run dev -- --host
