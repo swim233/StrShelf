@@ -16,10 +16,10 @@ jobs:
         target:
           - goos: darwin
             goarch: amd64
-            os: macos-26
+            os: macos-15-intel
           - goos: darwin
             goarch: arm64
-            os: macos-26
+            os: macos-15
           - goos: linux
             goarch: '386'
             os: ubuntu-24.04
