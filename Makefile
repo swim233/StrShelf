@@ -16,30 +16,36 @@ endef
 .PHONY: install build
 
 build: install clean build_frontend build_backend
-	@printf "\033[1;34mall target success complete!\033[0m\n"
+	@printf "\033[1;34mAll target success complete!\033[0m\n"
 
 install:
-	@printf "\033[1;34minstalling npm module...\033[0m\n"
+	@printf "\033[1;34mInstalling npm module...\033[0m\n"
 	pnpm install
 
 clean:
-	@printf "\033[1;34mcleaning dist files...\033[0m\n"
+	@printf "\033[1;34mCleaning dist files...\033[0m\n"
 	rm -rfv packages/web/dist
 	rm -rfv packages/api/dist
 
 build_frontend:
-	@printf "\033[1;34mpackaging frontend file...\033[0m\n"
+	@printf "\033[1;34mPackaging frontend file...\033[0m\n"
+	@start=$$(date +%s%3N); \
 	pnpm -C "packages/web" run build && \
 	mkdir -p packages/api/dist/ && \
-	cp -rv packages/web/dist/* packages/api/dist/
+	cp -rv packages/web/dist/* packages/api/dist/; \
+	end=$$(date +%s%3N); \
+	duration=$$((end - start)); \
+	printf "\033[1;34mFrontend build finished in %d ms\033[0m\n" $$duration
 
 build_backend:
-	@printf "\033[1;34mbuilding backend service...\033[0m\n"
-	@printf "Building with DebugModeStr=false\n"
+	@printf "\033[1;34mBuilding backend service...\033[0m\n"
+	@start=$$(date +%s%3N); \
 	cd packages/api && \
 	mkdir -p ../../build/bin && \
-	go build $(call _LDFLAGS,false,-s -w) -v -o ../../build/bin/strshelf
-
+	go build $(call _LDFLAGS,false,-s -w) -v -o ../../build/bin/strshelf; \
+	end=$$(date +%s%3N); \
+	duration=$$((end - start)); \
+	printf "\033[1;34mBackend build finished in %d ms\033[0m\n" $$duration
 run: run_backend run_frontend
 
 run_backend:
